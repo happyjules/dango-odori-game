@@ -16,11 +16,19 @@ var squishFactors = vec2(1,1);
 
 // this controls the pitch of the camera
 var theta = 0;
-var ypos = 0;
+var ypos = -1;
 
 // holds vertices and normals
 var points = [];
 var normals = [];
+
+var positions = [
+    vec3(0, ypos, -5),
+    vec3(4, ypos, -3),
+    vec3(-4, ypos, -4),
+    vec3(1, ypos, -4),
+    vec3(-2, ypos, -3)
+];
 
 // holds color info for dango in this order: material ambient color, material diffuse color, and material specular color
 var colors = [
@@ -238,6 +246,15 @@ function handleKeyDown(event) {
 function render(t) {
     
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+for(var i = 0; i < 5; i++){
+
+    // draw a single dango
+    // build model view matrix
+    modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
+    // send model view matrix to html file
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+
     jump = bounceHeight(t);
     squishFactors = squish(t);
     squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
@@ -252,11 +269,6 @@ function render(t) {
     // send projection matrix to html file
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
 
-    // draw a single dango
-    // build model view matrix
-    modelViewMatrix = mult(translate(0, ypos, -5), scale(scaleFactor, scaleFactor, scaleFactor));
-    // send model view matrix to html file
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
 
     // set colors
     ambientProduct  = mult(lightArray[0], colors[1]);
@@ -277,7 +289,7 @@ function render(t) {
 
     var eye1 = squishMatrix;
     eye1 = mult(eye1, translate(-.1, 0, .5));
-    eye1 = mult(eye1, scale(0.04, 0.3, 1));
+    eye1 = mult(eye1, scale(0.04, 0.3, .6));
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(eye1));
 
     // set colors
@@ -295,11 +307,11 @@ function render(t) {
 
     var eye2 = squishMatrix;
     eye2 = mult(eye2, translate(.1, 0, 0.5));
-    eye2 = mult(eye2, scale(0.04, 0.3, 1));
+    eye2 = mult(eye2, scale(0.04, 0.3, .6));
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(eye2));
 
     gl.drawArrays( gl.TRIANGLES, 0, index);
-
+}
 
     window.requestAnimFrame(render);
 }
