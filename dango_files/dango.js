@@ -6,7 +6,7 @@ var gl;
 var index = 0;
 var scaleFactor = 1;
 var h = 0; // height of dango
-var maxHeight = 2;
+var maxHeight = 5;
 var minHeight = 0; // not used in calculations yet. May be added to sin function.
 var minx = 0.5;
 var miny = 0.5;
@@ -16,15 +16,12 @@ var squishFactors = vec2(1,1);
 
 // this controls the pitch of the camera
 var theta = 0;
-var ypos = -1;
+var ypos = 0;
 
 // holds vertices and normals and texCoords
 var points = [];
 var normals = [];
-var texCoords = [];
 
-
-// holds colors
 var positions = [
     vec3(0, ypos, -5),
     vec3(4, ypos, -3),
@@ -66,19 +63,6 @@ var vb = vec4(0.0, 0.842809, 0.333333, 1);
 var vc = vec4(-0.86497, -0.271405, 0.333333, 1);
 var vd = vec4(0.86497, -0.271405, 0.333333,1);
 
-// texture things
-var texSize = 64;
-
-var texture;
-var image = new Image();
-image.src = "wall_texture.png";
-
-var texCoord = [
-    vec2(0, 0),
-    vec2(0, 1),
-    vec2(1, 1),
-    vec2(1, 0)
-];
 
 // cube vertices
 var roomVertices = [
@@ -92,49 +76,43 @@ var roomVertices = [
     vec4(  0.5, -0.5, -0.5, 1.0 )
 ];
 
-function configureTexture(image) {
-    texture = gl.createTexture();
-    gl.bindTexture( gl.TEXTURE_2D, texture );
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB,
-        gl.UNSIGNED_BYTE, image);
-    gl.generateMipmap( gl.TEXTURE_2D );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, 
-        gl.NEAREST_MIPMAP_LINEAR );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
-
-    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
-}
-
 // pushes cube vertices and texture coordinates
 function quad(a, b, c, d) {
-
      points.push(roomVertices[a]);
-     texCoords.push(texCoord[0]);
-
      points.push(roomVertices[b]);
-     texCoords.push(texCoord[1]); 
-
      points.push(roomVertices[c]);
-     texCoords.push(texCoord[2]); 
-    
+
      points.push(roomVertices[a]);
-     texCoords.push(texCoord[0]); 
-
      points.push(roomVertices[c]);
-     texCoords.push(texCoord[2]); 
-
      points.push(roomVertices[d]);
-     texCoords.push(texCoord[3]);
 }
 
 function colorCube() {
     quad( 1, 0, 3, 2 );
+    for(var i =0; i <6; i++)    
+        normals.push(0,0,-1,0);
     quad( 2, 3, 7, 6 );
+
+    for(var i =0; i <6; i++)    
+        normals.push(-1,0,0,0);
     quad( 3, 0, 4, 7 );
+
+    for(var i =0; i <6; i++)    
+        normals.push(0,1,0,0);
     quad( 6, 5, 1, 2 );
+
+    for(var i =0; i <6; i++)    
+        normals.push(0,-1,0,0);
+    
     quad( 4, 5, 6, 7 );
+    
+    for(var i =0; i <6; i++)    
+        normals.push(0,0,1,0);
     quad( 5, 4, 0, 1 );
+
+    for(var i =0; i <6; i++)    
+        normals.push(1,0,0,0);
+    
 }
 
 // light information
@@ -332,6 +310,14 @@ function handleKeyDown(event) {
 function render(t) {
     
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // projection matrix
+    projectionMatrix = perspective(fovy, aspect, near, far);
+    projectionMatrix = mult(projectionMatrix, rotate(yaw, [0,1,0]));
+    projectionMatrix = mult(projectionMatrix, translate(scoot, 0, dist));
+    projectionMatrix = mult(projectionMatrix, rotate(theta, [1,0,0]));
+    // send projection matrix to html file
+    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
+
 
 for(var i = 0; i < 5; i++){
 
@@ -346,15 +332,6 @@ for(var i = 0; i < 5; i++){
     squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
     squishMatrix = mult(squishMatrix, translate(0, jump, 0));
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
-
-    // projection matrix
-    projectionMatrix = perspective(fovy, aspect, near, far);
-    projectionMatrix = mult(projectionMatrix, rotate(yaw, [0,1,0]));
-    projectionMatrix = mult(projectionMatrix, translate(scoot, jump, dist));
-    projectionMatrix = mult(projectionMatrix, rotate(theta, [1,0,0]));
-    // send projection matrix to html file
-    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
-
 
     // set colors
     ambientProduct  = mult(lightArray[0], dangoColor[i]);
@@ -398,12 +375,24 @@ for(var i = 0; i < 5; i++){
     // draw eye2
     gl.drawArrays( gl.TRIANGLES, 0, index);
 
-
-    // draw room
-    gl.drawArrays (gl.TRIANGLES, index, 36)
-
-
 }
+// draw room
+    squishMatrix = mat4();
+    gl.uniformMatrix4fv(squishMatrixLoc,false,flatten(squishMatrix));
+    // build model view matrix
+    modelViewMatrix = mult(translate(0,4.5,0), scale(10, 10, 10));
+    // send model view matrix to html file
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+    // set colors
+    ambientProduct  = mult(lightArray[0], colors[0]);
+    diffuseProduct  = mult(lightArray[1], colors[2]);
+    //if (don't want specular product)
+    specularProduct = vec4(0,0,0,0);
+    // send colors to shader
+    gl.uniform4fv( apLoc, flatten(ambientProduct) );
+    gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
+    gl.uniform4fv( spLoc, flatten(specularProduct) );
+    gl.drawArrays(gl.TRIANGLES, index, 36);
 
     window.requestAnimFrame(render);
 }
