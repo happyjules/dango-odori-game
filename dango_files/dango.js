@@ -33,6 +33,15 @@ var positions = [
     vec3(-2, ypos, -3)
 ];
 
+//color info for different colored dango
+var dangoColor = [
+    vec4( 0.588, 1, 0.71, 1.0 ), //green
+    vec4( 0.682, 0.47, 0.776, 1.0 ), //purple
+    vec4( 0.8, 0.462, 0.58, 1.0 ), //pink
+    vec4( 0.423, 0.654, 0.8, 1.0 ), //blue
+    vec4( 1, 1, 1, 1.0 ) //white
+]
+
 // holds color info for dango in this order: material ambient color, material diffuse color, and material specular color
 var colors = [
     vec4( 0.5, 0.5, 0.5, 1.0 ), // grey
@@ -100,22 +109,22 @@ function configureTexture(image) {
 // pushes cube vertices and texture coordinates
 function quad(a, b, c, d) {
 
-     pointsArray.push(roomVertices[a]);
+     points.push(roomVertices[a]);
      texCoords.push(texCoord[0]);
 
-     pointsArray.push(roomVertices[b]);
+     points.push(roomVertices[b]);
      texCoords.push(texCoord[1]); 
 
-     pointsArray.push(roomVertices[c]);
+     points.push(roomVertices[c]);
      texCoords.push(texCoord[2]); 
     
-     pointsArray.push(roomVertices[a]);
+     points.push(roomVertices[a]);
      texCoords.push(texCoord[0]); 
 
-     pointsArray.push(roomVertices[c]);
+     points.push(roomVertices[c]);
      texCoords.push(texCoord[2]); 
 
-     pointsArray.push(roomVertices[d]);
+     points.push(roomVertices[d]);
      texCoords.push(texCoord[3]);
 }
 
@@ -348,7 +357,7 @@ for(var i = 0; i < 5; i++){
 
 
     // set colors
-    ambientProduct  = mult(lightArray[0], colors[1]);
+    ambientProduct  = mult(lightArray[0], dangoColor[i]);
     diffuseProduct  = mult(lightArray[1], colors[2]);
     //if (don't want specular product)
         specularProduct = vec4(0,0,0,0);
