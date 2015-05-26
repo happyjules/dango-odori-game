@@ -18,16 +18,17 @@ var squishFactors = vec2(1,1);
 var theta = 0;
 var ypos = 0;
 
-// holds vertices and normals
+// holds vertices and normals and texCoords
 var points = [];
 var normals = [];
+var texCoords = [];
 
-// holds color info for dango in this order: material ambient color, material diffuse color, and material specular color
+// holds colors
 var colors = [
-    vec4( 0.5, 0.5, 0.5, 1.0 ),
-    vec4( 0.9, 0.9, 0.9, 1.0 ),
-    vec4( 1.0, 1.0, 1.0, 1.0 ),
-    vec4( 0.0, 0.0, 0.0, 1.0 )// black 
+    vec4( 0.5, 0.5, 0.5, 1.0 ), // grey
+    vec4( 0.9, 0.9, 0.9, 1.0 ), // almost white
+    vec4( 1.0, 1.0, 1.0, 1.0 ), // white
+    vec4( 0.0, 0.0, 0.0, 1.0 ) // black 
 ];
 
 // camera parameters
@@ -45,6 +46,77 @@ var va = vec4(0.0, 0.0, -.3,1);
 var vb = vec4(0.0, 0.842809, 0.333333, 1);
 var vc = vec4(-0.86497, -0.271405, 0.333333, 1);
 var vd = vec4(0.86497, -0.271405, 0.333333,1);
+
+// texture things
+var texSize = 64;
+
+var texture;
+var image = new Image();
+image.src = "wall_texture.png";
+
+var texCoord = [
+    vec2(0, 0),
+    vec2(0, 1),
+    vec2(1, 1),
+    vec2(1, 0)
+];
+
+// cube vertices
+var roomVertices = [
+    vec4( -0.5, -0.5,  0.5, 1.0 ),
+    vec4( -0.5,  0.5,  0.5, 1.0 ),
+    vec4(  0.5,  0.5,  0.5, 1.0 ),
+    vec4(  0.5, -0.5,  0.5, 1.0 ),
+    vec4( -0.5, -0.5, -0.5, 1.0 ),
+    vec4( -0.5,  0.5, -0.5, 1.0 ),
+    vec4(  0.5,  0.5, -0.5, 1.0 ),
+    vec4(  0.5, -0.5, -0.5, 1.0 )
+];
+
+function configureTexture(image) {
+    texture = gl.createTexture();
+    gl.bindTexture( gl.TEXTURE_2D, texture );
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB,
+        gl.UNSIGNED_BYTE, image);
+    gl.generateMipmap( gl.TEXTURE_2D );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, 
+        gl.NEAREST_MIPMAP_LINEAR );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), 0);
+}
+
+// pushes cube vertices and texture coordinates
+function quad(a, b, c, d) {
+
+     pointsArray.push(roomVertices[a]);
+     texCoords.push(texCoord[0]);
+
+     pointsArray.push(roomVertices[b]);
+     texCoords.push(texCoord[1]); 
+
+     pointsArray.push(roomVertices[c]);
+     texCoords.push(texCoord[2]); 
+    
+     pointsArray.push(roomVertices[a]);
+     texCoords.push(texCoord[0]); 
+
+     pointsArray.push(roomVertices[c]);
+     texCoords.push(texCoord[2]); 
+
+     pointsArray.push(roomVertices[d]);
+     texCoords.push(texCoord[3]);
+}
+
+function colorCube() {
+    quad( 1, 0, 3, 2 );
+    quad( 2, 3, 7, 6 );
+    quad( 3, 0, 4, 7 );
+    quad( 6, 5, 1, 2 );
+    quad( 4, 5, 6, 7 );
+    quad( 5, 4, 0, 1 );
+}
 
 // light information
 var lightPosition = vec4(0.0, 5.0, 0.0, 0.0 );
@@ -158,8 +230,11 @@ window.onload = function init() {
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-    // push vertices
+    // push dango vertices
     tetrahedron(va, vb, vc, vd, 5);
+
+    // push room vertices
+    colorCube();
 
     var nBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
@@ -271,7 +346,7 @@ function render(t) {
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
     gl.uniform4fv( spLoc, flatten(specularProduct) );
 
-    // draw
+    // draw dango
     for( var j = 0; j < index; j += 3)
         gl.drawArrays( gl.TRIANGLES, j, 3 );
 
@@ -290,15 +365,18 @@ function render(t) {
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
     gl.uniform4fv( spLoc, flatten(specularProduct) );
-   // draw
+   // draw eye1
      gl.drawArrays( gl.TRIANGLES, 0, index);
 
     var eye2 = squishMatrix;
     eye2 = mult(eye2, translate(.1, 0, 0.5));
     eye2 = mult(eye2, scale(0.04, 0.3, 1));
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(eye2));
-
+    // draw eye2
     gl.drawArrays( gl.TRIANGLES, 0, index);
+
+    // draw room
+    gl.drawArrays (gl.TRIANGLES, index, 36)
 
 
     window.requestAnimFrame(render);
