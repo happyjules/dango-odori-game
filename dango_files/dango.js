@@ -223,6 +223,10 @@ window.onload = function init() {
     
     gl.enable(gl.DEPTH_TEST);
 
+    document.getElementById("restart").onclick = function(){;};
+    document.getElementById("pause").onclick = function(){ ;};
+    
+
     //  Load shaders and initialize attribute buffers
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );

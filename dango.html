@@ -1,10 +1,37 @@
 <!DOCTYPE html>
 
 <html>
+<!-- what does this line do?? -->
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 
 <head>
+    <link href="style.css" type="text/css" rel="stylesheet">
+    <h1>Dango Odori Game</h1>
+</head>
 
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><script id="vertex-shader" type="x-shader/x-vertex">
+
+<body>
+
+<main>
+<script type="text/javascript" src="./webgl_files/initShaders.js"></script>
+<script type="text/javascript" src="./webgl_files/webgl-utils.js"></script>
+<script type="text/javascript" src="./webgl_files/MV.js"></script>
+
+<!-- draw scene -->
+<!--script type="text/javascript" src="./dango_files/scene.js"></script -->
+
+<!-- draw dangos -->
+
+<script type="text/javascript" src="./dango_files/dango.js"></script>
+
+
+
+
+<canvas id="gl-canvas" width="960" height="540">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
 
 // assume both position and normal are in homogeneous form
 
@@ -84,21 +111,18 @@ main()
 }
 </script>
 
-</head>
+</main><br>
 
-<body>
-<script type="text/javascript" src="./dango_files/initShaders.js"></script>
+<aside>
+    <div>
+        <button id = "restart" style="font:bold 20px Tahoma">Restart</button>
+        <button id = "pause" style="font:bold 20px Tahoma">Pause</button>
+    </div>
 
-<script type="text/javascript" src="./dango_files/webgl-utils.js"></script>
-
-<script type="text/javascript" src="./dango_files/MV.js"></script>
-<script type="text/javascript" src="./dango_files/dango.js"></script>
-
-
-<canvas id="gl-canvas" width="960" height="540">
-Oops ... your browser doesn't support the HTML5 canvas element
-</canvas>
-
+    <h2>Score:</h2>
+    
+      
+</aside>
 
 </body>
 
