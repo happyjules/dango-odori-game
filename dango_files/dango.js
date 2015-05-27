@@ -116,12 +116,12 @@ function colorCube() {
 }
 
 // light information
-var lightPosition = vec4(0.0, 5.0, 0.0, 0.0 );
+var lightPosition = vec4(0.0, 3.0, 0.0, 0.0 );
 // holds information on light in this order: light ambient color, light diffuse color, and specular color
 var lightArray = [
-    vec4( 1.0, 0.8, 0.8, 1.0 ),
-    vec4( 1.0, 0.8, 0.8, 1.0 ),
-    vec4( 1.0, 0.8, 0.8, 1.0 )
+    vec4( 0.8, 0.8, 0.8, 1.0 ),
+    vec4( 0.8, 0.8, 0.8, 1.0 ),
+    vec4( 0.8, 0.8, 0.8, 1.0 )
 ];
 materialShininess = 20;
 
@@ -314,7 +314,8 @@ function handleKeyDown(event) {
 function render(t) {
     
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    // projection matrix
+
+    // build projection matrix
     projectionMatrix = perspective(fovy, aspect, near, far);
     projectionMatrix = mult(projectionMatrix, rotate(yaw, [0,1,0]));
     projectionMatrix = mult(projectionMatrix, translate(scoot, 0, dist));
@@ -322,65 +323,68 @@ function render(t) {
     // send projection matrix to html file
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
 
+    // DANGO
+    for(var i = 0; i < 5; i++){
 
-for(var i = 0; i < 5; i++){
+        // draw a single dango
+        // build model view matrix
+        modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
+        // send model view matrix to html file
+        gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
 
-    // draw a single dango
-    // build model view matrix
-    modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
-    // send model view matrix to html file
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+        jump = bounceHeight(t);
+        squishFactors = squish(t);
+        squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
+        squishMatrix = mult(squishMatrix, translate(0, jump, 0));
+        gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
 
-    jump = bounceHeight(t);
-    squishFactors = squish(t);
-    squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
-    squishMatrix = mult(squishMatrix, translate(0, jump, 0));
-    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
-
-    // set colors
-    ambientProduct  = mult(lightArray[0], dangoColor[i]);
-    diffuseProduct  = mult(lightArray[1], colors[2]);
-    //if (don't want specular product)
+        // set colors
+        ambientProduct  = mult(lightArray[0], dangoColor[i]);
+        diffuseProduct  = mult(lightArray[1], colors[2]);
+        //if (don't want specular product)
         specularProduct = vec4(0,0,0,0);
-    //else
-    //    specularProduct = mult(lightArray[2], colorArray[3]);
+        //else
+        //    specularProduct = mult(lightArray[2], colorArray[3]);
 
-    // send colors to shader
-    gl.uniform4fv( apLoc, flatten(ambientProduct) );
-    gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
-    gl.uniform4fv( spLoc, flatten(specularProduct) );
+        // send colors to shader
+        gl.uniform4fv( apLoc, flatten(ambientProduct) );
+        gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
+        gl.uniform4fv( spLoc, flatten(specularProduct) );
 
-    // draw dango
-    for( var j = 0; j < index; j += 3)
-        gl.drawArrays( gl.TRIANGLES, j, 3 );
+        // draw dangos
+        for (var j = 0; j < index; j += 3) 
+            gl.drawArrays( gl.TRIANGLES, j, 3 );
 
-    var eye1 = squishMatrix;
-    eye1 = mult(eye1, translate(-.1, 0, .5));
-    eye1 = mult(eye1, scale(0.04, 0.3, .6));
-    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(eye1));
+        // EYES
+        var eye1 = squishMatrix;
+        eye1 = mult(eye1, translate(-.1, 0, .5));
+        eye1 = mult(eye1, scale(0.04, 0.3, .6));
+        gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(eye1));
 
-    // set colors
-    ambientProduct  = mult(lightArray[0], colors[3]);
-    diffuseProduct  = mult(lightArray[1], colors[3]);
-    //if (don't want specular product)
-    specularProduct = vec4(0,0,0,1);
+        // set eye color to black
+        ambientProduct  = mult(lightArray[0], colors[3]);
+        diffuseProduct  = mult(lightArray[1], colors[3]);
+        //if (don't want specular product)
+        specularProduct = vec4(0,0,0,1);
 
-    // send colors to shader
-    gl.uniform4fv( apLoc, flatten(ambientProduct) );
-    gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
-    gl.uniform4fv( spLoc, flatten(specularProduct) );
-   // draw eye1
-     gl.drawArrays( gl.TRIANGLES, 0, index);
+        // send colors to shader
+        gl.uniform4fv( apLoc, flatten(ambientProduct) );
+        gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
+        gl.uniform4fv( spLoc, flatten(specularProduct) );
+        // draw eye1
+        gl.drawArrays( gl.TRIANGLES, 0, index);
 
-    var eye2 = squishMatrix;
-    eye2 = mult(eye2, translate(.1, 0, 0.5));
-    eye2 = mult(eye2, scale(0.04, 0.3, .6));
-    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(eye2));
-    // draw eye2
-    gl.drawArrays( gl.TRIANGLES, 0, index);
+        var eye2 = squishMatrix;
+        eye2 = mult(eye2, translate(.1, 0, 0.5));
+        eye2 = mult(eye2, scale(0.04, 0.3, .6));
+        gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(eye2));
+        // draw eye2
+        gl.drawArrays( gl.TRIANGLES, 0, index);
 
-}
-// draw room
+        
+    }
+
+    // ROOM
     squishMatrix = mat4();
     gl.uniformMatrix4fv(squishMatrixLoc,false,flatten(squishMatrix));
     // build model view matrix
@@ -396,6 +400,7 @@ for(var i = 0; i < 5; i++){
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
     gl.uniform4fv( spLoc, flatten(specularProduct) );
+    // draw room
     gl.drawArrays(gl.TRIANGLES, index, 36);
 
     window.requestAnimFrame(render);
