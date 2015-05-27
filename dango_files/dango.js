@@ -1,52 +1,65 @@
 // canvas and gl variables
 var canvas;
 var gl;
- 
- var dangoSphere;
-var sceneCube;
-// various parameters
+
+var dangoSphere;
+
+// various dango parameters
 var index = 0;
 var scaleFactor = 1;
 var h = 0; // height of dango
 var maxHeight = 5;
-var minHeight = 0; // not used in calculations yet. May be added to sin function.
+var minHeight = 0;
 var minx = 0.5;
 var miny = 0.5;
 var maxx = 1;
 var maxy = 1;
 var squishFactors = vec2(1,1);
 
-// this controls the pitch of the camera
-var theta = 0;
+// camera parameters
+var aspect;
+var near  = 0.1;
+var far   = 100;
+var fovy  = 45.0;
+
+var yaw   = 0;
+var theta = 0; // pitch
+
+var scoot = 0; // x-position
+var dist  = -5; // z-position
+var jump  = 0; // y-position
 var ypos = 0;
 
 // holds vertices and normals and texCoords
-var points = [];
+var points  = [];
 var normals = [];
 
 var positions = [
-    vec3(0, ypos, -5),
-    vec3(4, ypos, -3),
+    vec3( 0, ypos, -5),
+    vec3( 4, ypos, -3),
     vec3(-4, ypos, -4),
-    vec3(1, ypos, -4),
+    vec3( 1, ypos, -4),
     vec3(-2, ypos, -3)
 ];
 
+// DANGO
+
 //color info for different colored dango
 var dangoColor = [
-    vec4( 0.588, 1, 0.71, 1.0 ), //green
-    vec4( 0.682, 0.47, 0.776, 1.0 ), //purple
-    vec4( 0.8, 0.462, 0.58, 1.0 ), //pink
-    vec4( 0.423, 0.654, 0.8, 1.0 ), //blue
-    vec4( 1, 1, 1, 1.0 ) //white
+    vec4( 0.588, 1,     0.71,  1.0 ), //green
+    vec4( 0.682, 0.47,  0.776, 1.0 ), //purple
+    vec4( 0.8,   0.462, 0.58,  1.0 ), //pink
+    vec4( 0.423, 0.654, 0.8,   1.0 ), //blue
+    vec4( 1,     1,     1,     1.0 ) //white
 ]
 
-// holds color info for dango in this order: material ambient color, material diffuse color, and material specular color
+// holds color info
 var colors = [
     vec4( 0.5, 0.5, 0.5, 1.0 ), // grey
     vec4( 0.9, 0.9, 0.9, 1.0 ), // almost white
     vec4( 1.0, 1.0, 1.0, 1.0 ), // white
-    vec4( 0.0, 0.0, 0.0, 1.0 ) // black 
+    vec4( 0.0, 0.0, 0.0, 1.0 ), // black
+    vec4( 1.0, 0.3, 0.3, 1.0 ) // red?
 ];
 
 // camera parameters
@@ -59,13 +72,8 @@ var dist  = -5;
 var jump  = 0;
 var aspect;
 
-// tetrahedron vertices
-// var va = vec4(0.0, 0.0, -.3,1);
-// var vb = vec4(0.0, 0.842809, 0.333333, 1);
-// var vc = vec4(-0.86497, -0.271405, 0.333333, 1);
-// var vd = vec4(0.86497, -0.271405, 0.333333,1);
 
-
+// ROOM
 // cube vertices
 var roomVertices = [
     vec4( -0.5, -0.5,  0.5, 1.0 ),
@@ -90,40 +98,38 @@ function quad(a, b, c, d) {
 }
 
 function colorCube() {
-    quad( 1, 0, 3, 2 );
-    for(var i =0; i <6; i++)    
+    quad( 1, 0, 3, 2 ); // front
+    for(var i = 0; i < 6; i++)    
         normals.push(0,0,-1,0);
+
     quad( 2, 3, 7, 6 );
-
-    for(var i =0; i <6; i++)    
+    for(var i = 0; i < 6; i++)    
         normals.push(-1,0,0,0);
+
     quad( 3, 0, 4, 7 );
-
-    for(var i =0; i <6; i++)    
+    for(var i = 0; i < 6; i++)    
         normals.push(0,1,0,0);
-    quad( 6, 5, 1, 2 );
 
-    for(var i =0; i <6; i++)    
+    quad( 6, 5, 1, 2 );
+    for(var i = 0; i < 6; i++)    
         normals.push(0,-1,0,0);
     
     quad( 4, 5, 6, 7 );
-    
-    for(var i =0; i <6; i++)    
+    for(var i = 0; i < 6; i++)    
         normals.push(0,0,1,0);
-    quad( 5, 4, 0, 1 );
 
-    for(var i =0; i <6; i++)    
+    quad( 5, 4, 0, 1 );
+    for(var i = 0; i < 6; i++)    
         normals.push(1,0,0,0);
-    
 }
 
 // light information
-var lightPosition = vec4(0.0, 5.0, 0.0, 0.0 );
+var lightPosition = vec4(0.0, 3.0, 0.0, 0.0 );
 // holds information on light in this order: light ambient color, light diffuse color, and specular color
 var lightArray = [
-    vec4( 1.0, 0.8, 0.8, 1.0 ),
-    vec4( 1.0, 0.8, 0.8, 1.0 ),
-    vec4( 1.0, 0.8, 0.8, 1.0 )
+    vec4( 0.8, 0.8, 0.8, 1.0 ),
+    vec4( 0.8, 0.8, 0.8, 1.0 ),
+    vec4( 0.8, 0.8, 0.8, 1.0 )
 ];
 materialShininess = 20;
 
@@ -148,11 +154,13 @@ function computeFlat(a, b, c){
 }
 
 
+// calculates height of dango wrt time
 function bounceHeight(t) {
     h = maxHeight*Math.pow((Math.sin(t/1000)), 2);
     return h;
 }
 
+// calculates scaling factors of dango wrt height
 function squish(t) {
     var j = maxHeight*Math.pow(Math.sin(2*t/1000), 2);
     var my = maxHeight/(maxx - minx); //-4
@@ -269,7 +277,8 @@ function handleKeyDown(event) {
 function render(t) {
     
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    // projection matrix
+
+    // build projection matrix
     projectionMatrix = perspective(fovy, aspect, near, far);
     projectionMatrix = mult(projectionMatrix, rotate(yaw, [0,1,0]));
     projectionMatrix = mult(projectionMatrix, translate(scoot, 0, dist));
@@ -289,19 +298,24 @@ for(var i = 0; i < 5; i++){
     //set the model view matrix
     modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
 
-    // set colors
-    ambientProduct  = mult(lightArray[0], dangoColor[i]);
-    diffuseProduct  = mult(lightArray[1], colors[2]);
-    specularProduct = vec4(0,0,0,0);
+        // set colors
+        ambientProduct  = mult(lightArray[0], dangoColor[i]);
+        diffuseProduct  = mult(lightArray[1], colors[2]);
+        //if (don't want specular product)
+        specularProduct = vec4(0,0,0,0);
+        //else
+        //    specularProduct = mult(lightArray[2], colorArray[3]);
 
-    dangoSphere.draw(squishMatrix);
-}
+        dangoSphere.draw(squishMatrix);
+ 
+      }
+
 
    // set colors of eyes to black
     ambientProduct  = mult(lightArray[0], colors[3]);
     diffuseProduct  = mult(lightArray[1], colors[3]);
-   
-   //draw eyes of the dangos
+
+         //draw eyes of the dangos
 for(var k = 0; k < 5; k++){
     //set the location of the eyes 
     modelViewMatrix = mult(translate(positions[k]), scale(scaleFactor, scaleFactor, scaleFactor));
@@ -319,18 +333,43 @@ for(var k = 0; k < 5; k++){
     dangoSphere.draw(eye2);
 }
 
-// draw room
+  // set colors of room
+    ambientProduct  = mult(lightArray[0], colors[0]);
+    diffuseProduct  = mult(lightArray[1], colors[2]);
+     specularProduct = vec4(0,0,0,0);
+
     squishMatrix = mat4();
     gl.uniformMatrix4fv(squishMatrixLoc,false,flatten(squishMatrix));
     // build model view matrix
     modelViewMatrix = mult(translate(0, 4.5,0), scale(10, 10, 10));
-    // send model view matrix to html file
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+    // send model view matrix to html file
+    specularProduct = vec4(0, 0, 0, 0);
+    // send colors to shader
+    gl.uniform4fv( apLoc, flatten(ambientProduct) );
+    gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
+    gl.uniform4fv( spLoc, flatten(specularProduct) );
+
+    //SWITCH BUTTERS
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer );
+    gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
+        
+    // draw room
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
+
+    // CHOPSTICKS
+    squishMatrix = scale(1, 1, 10);
+    gl.uniformMatrix4fv(squishMatrixLoc,false,flatten(squishMatrix));
+    modelViewMatrix = mult(translate(0, 4.5, 0), rotate(30, [0,1,0]));
+     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
     // set colors
-    ambientProduct  = mult(lightArray[0], colors[0]);
+    ambientProduct  = mult(lightArray[0], colors[3]);
     diffuseProduct  = mult(lightArray[1], colors[2]);
-    //if (don't want specular product)
-    specularProduct = vec4(0,0,0,0);
+    specularProduct = vec4(0, 0, 0, 0);
     // send colors to shader
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
@@ -342,6 +381,9 @@ for(var k = 0; k < 5; k++){
 
     gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer );
     gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
+
+    // draw chopsticks
     gl.drawArrays(gl.TRIANGLES, 0, 36);
 
     window.requestAnimFrame(render);
