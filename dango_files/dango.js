@@ -2,6 +2,8 @@
 var canvas;
 var gl;
  
+ var dangoSphere;
+var sceneCube;
 // various parameters
 var index = 0;
 var scaleFactor = 1;
@@ -58,10 +60,10 @@ var jump  = 0;
 var aspect;
 
 // tetrahedron vertices
-var va = vec4(0.0, 0.0, -.3,1);
-var vb = vec4(0.0, 0.842809, 0.333333, 1);
-var vc = vec4(-0.86497, -0.271405, 0.333333, 1);
-var vd = vec4(0.86497, -0.271405, 0.333333,1);
+// var va = vec4(0.0, 0.0, -.3,1);
+// var vb = vec4(0.0, 0.842809, 0.333333, 1);
+// var vc = vec4(-0.86497, -0.271405, 0.333333, 1);
+// var vd = vec4(0.86497, -0.271405, 0.333333,1);
 
 
 // cube vertices
@@ -134,25 +136,6 @@ var modelViewMatrixLoc, projectionMatrixLoc, squishMatrixLoc;
 // color product locations
 var apLoc, dpLoc, spLoc, shininessLoc;
 
-// pushes vertices and normals of triangle
-function triangle(a, b, c, complexity) {
-     
-     points.push(a);
-     points.push(b);
-     points.push(c);
-     index += 3;
-    
-     /*if (flatShading) { // per triangle normals
-        var normal = computeFlat(a,b,c);
-        for (var i = 0; i < 3; i++)
-            normalsArray.push(normal[0], normal[1], normal[2], 0.0);
-        */
-     //} else { // analytical normals
-        normals.push(a[0],a[1], a[2], 0.0);
-        normals.push(b[0],b[1], b[2], 0.0);
-        normals.push(c[0],c[1], c[2], 0.0);
-    //}
-}
 
 // computes flat normals
 function computeFlat(a, b, c){
@@ -163,37 +146,6 @@ function computeFlat(a, b, c){
 
     return normal;
 }
-
-// recursively determines vertices of sphere
-function divideTriangle(a, b, c, count, complexity) {
-    if ( count > 0 ) {
-                
-        var ab = mix( a, b, 0.5);
-        var ac = mix( a, c, 0.5);
-        var bc = mix( b, c, 0.5);
-                
-        ab = normalize(ab, true);
-        ac = normalize(ac, true);
-        bc = normalize(bc, true);
-                                
-        divideTriangle( a, ab, ac, count - 1, complexity );
-        divideTriangle( ab, b, bc, count - 1, complexity );
-        divideTriangle( bc, c, ac, count - 1, complexity );
-        divideTriangle( ab, bc, ac, count - 1, complexity );
-    }
-    else { 
-        triangle( a, b, c, complexity );
-    }
-}
-
-// uses tetrahedron vertices to push sphere vertices
-function tetrahedron(a, b, c, d, n) {
-    divideTriangle(a, b, c, n, n);
-    divideTriangle(d, c, b, n, n);
-    divideTriangle(a, d, b, n, n);
-    divideTriangle(a, c, d, n, n);
-}
-
 
 
 function bounceHeight(t) {
@@ -223,6 +175,8 @@ window.onload = function init() {
     
     gl.enable(gl.DEPTH_TEST);
 
+
+//Still need to implement restart
     document.getElementById("restart").onclick = function(){;};
     document.getElementById("pause").onclick = function(){ ;};
     
@@ -231,25 +185,24 @@ window.onload = function init() {
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
-    // push dango vertices
-    tetrahedron(va, vb, vc, vd, 5);
-
-    // push room vertices
     colorCube();
+   //Create sphere to draw dango body and eyes
+     dangoSphere = new sphere();
 
-    var nBuffer = gl.createBuffer();
+
+    nBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
     gl.bufferData( gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW );
     
-    var vNormal = gl.getAttribLocation( program, "vNormal" );
-    gl.vertexAttribPointer( vNormal, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray(vNormal);
+    tNormal = gl.getAttribLocation( program, "tNormal" );
+    gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
+    gl.enableVertexAttribArray(tNormal);
 
-    var vBuffer = gl.createBuffer();
+    vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
     
-    var vPosition = gl.getAttribLocation( program, "vPosition");
+    vPosition = gl.getAttribLocation( program, "vPosition");
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
     
@@ -263,6 +216,8 @@ window.onload = function init() {
     dpLoc = gl.getUniformLocation( program, "diffuseProduct");
     spLoc = gl.getUniformLocation( program, "specularProduct");
     gl.uniform1f( gl.getUniformLocation( program, "shininess" ), materialShininess );
+
+   
 
     // handle key commands
     document.onkeydown = handleKeyDown;
@@ -322,69 +277,53 @@ function render(t) {
     // send projection matrix to html file
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
 
-
-for(var i = 0; i < 5; i++){
-
-    // draw a single dango
-    // build model view matrix
-    modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
-    // send model view matrix to html file
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
-
+    //all the dangos will be bouncing at the same time in the same motion.
     jump = bounceHeight(t);
     squishFactors = squish(t);
     squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
     squishMatrix = mult(squishMatrix, translate(0, jump, 0));
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
 
+//draw the dango bodies
+for(var i = 0; i < 5; i++){
+    //set the model view matrix
+    modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
+
     // set colors
     ambientProduct  = mult(lightArray[0], dangoColor[i]);
     diffuseProduct  = mult(lightArray[1], colors[2]);
-    //if (don't want specular product)
-        specularProduct = vec4(0,0,0,0);
-    //else
-    //    specularProduct = mult(lightArray[2], colorArray[3]);
+    specularProduct = vec4(0,0,0,0);
 
-    // send colors to shader
-    gl.uniform4fv( apLoc, flatten(ambientProduct) );
-    gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
-    gl.uniform4fv( spLoc, flatten(specularProduct) );
+    dangoSphere.draw(squishMatrix);
+}
 
-    // draw dango
-    for( var j = 0; j < index; j += 3)
-        gl.drawArrays( gl.TRIANGLES, j, 3 );
+   // set colors of eyes to black
+    ambientProduct  = mult(lightArray[0], colors[3]);
+    diffuseProduct  = mult(lightArray[1], colors[3]);
+   
+   //draw eyes of the dangos
+for(var k = 0; k < 5; k++){
+    //set the location of the eyes 
+    modelViewMatrix = mult(translate(positions[k]), scale(scaleFactor, scaleFactor, scaleFactor));
 
     var eye1 = squishMatrix;
     eye1 = mult(eye1, translate(-.1, 0, .5));
     eye1 = mult(eye1, scale(0.04, 0.3, .6));
-    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(eye1));
 
-    // set colors
-    ambientProduct  = mult(lightArray[0], colors[3]);
-    diffuseProduct  = mult(lightArray[1], colors[3]);
-    //if (don't want specular product)
-    specularProduct = vec4(0,0,0,1);
-
-    // send colors to shader
-    gl.uniform4fv( apLoc, flatten(ambientProduct) );
-    gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
-    gl.uniform4fv( spLoc, flatten(specularProduct) );
-   // draw eye1
-     gl.drawArrays( gl.TRIANGLES, 0, index);
+    dangoSphere.draw(eye1);
 
     var eye2 = squishMatrix;
     eye2 = mult(eye2, translate(.1, 0, 0.5));
     eye2 = mult(eye2, scale(0.04, 0.3, .6));
-    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(eye2));
-    // draw eye2
-    gl.drawArrays( gl.TRIANGLES, 0, index);
 
+    dangoSphere.draw(eye2);
 }
+
 // draw room
     squishMatrix = mat4();
     gl.uniformMatrix4fv(squishMatrixLoc,false,flatten(squishMatrix));
     // build model view matrix
-    modelViewMatrix = mult(translate(0,4.5,0), scale(10, 10, 10));
+    modelViewMatrix = mult(translate(0, 4.5,0), scale(10, 10, 10));
     // send model view matrix to html file
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
     // set colors
@@ -396,7 +335,14 @@ for(var i = 0; i < 5; i++){
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
     gl.uniform4fv( spLoc, flatten(specularProduct) );
-    gl.drawArrays(gl.TRIANGLES, index, 36);
+
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer );
+    gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
 
     window.requestAnimFrame(render);
 }

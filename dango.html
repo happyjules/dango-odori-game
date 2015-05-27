@@ -18,7 +18,8 @@
 <script type="text/javascript" src="./webgl_files/MV.js"></script>
 
 <!-- draw scene -->
-<!--script type="text/javascript" src="./dango_files/scene.js"></script -->
+<script type="text/javascript" src="./dango_files/dango_body.js"></script>
+<script type="text/javascript" src="./dango_files/scene.js"></script>
 
 <!-- draw dangos -->
 
@@ -36,7 +37,7 @@ Oops ... your browser doesn't support the HTML5 canvas element
 // assume both position and normal are in homogeneous form
 
 attribute vec4 vPosition;
-attribute vec4 vNormal;
+attribute vec4 tNormal;
 
 varying vec4 fColor;
 
@@ -72,7 +73,7 @@ main()
 
     // Transform vertex normal into eye coordinates
     
-    vec3 N = normalize( (modelViewMatrix*vNormal).xyz);
+    vec3 N = normalize( (modelViewMatrix*tNormal).xyz);
 
 
     // Compute terms in the illumination equation

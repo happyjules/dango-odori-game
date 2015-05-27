@@ -76,8 +76,8 @@ function cube()
 	{		
 
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(model_transform) );
-    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(mat4()));
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
 
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
@@ -96,6 +96,6 @@ function cube()
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.true_normal_buffer );
 		gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
 		
-		gl.drawArrays( gl.TRIANGLES, 0, this.points.length );
+		gl.drawArrays( gl.TRIANGLES, 0, this.vertices.length );
 	}
 }
