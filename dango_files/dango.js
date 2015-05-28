@@ -31,6 +31,10 @@ var dist  = -5; // z-position
 var jump  = 0; // y-position
 var ypos = 0;
 
+//control position of chopstick
+var grab;
+var grabPosition = 0;
+
 // holds vertices and normals and texCoords
 var points  = [];
 var normals = [];
@@ -187,8 +191,7 @@ window.onload = function init() {
 
 //Still need to implement restart
     document.getElementById("restart").onclick = function(){;};
-    document.getElementById("pause").onclick = function(){ ;};
-    
+ 
 
     //  Load shaders and initialize attribute buffers
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
@@ -259,13 +262,13 @@ function handleKeyDown(event) {
         scoot += 0.25;
         if(scoot > 9.9)
             scoot = 9.9;
-    } else if (event.keyCode == 75) {
-        // k key - right
+    } else if (event.keyCode == 76) {
+        // l key - right
         scoot -= 0.25;
         if(scoot < -9.9)
             scoot = -9.9;
-    } else if (event.keyCode == 77) {
-        // m key - backward
+    } else if (event.keyCode == 75) {
+        // k key - backward
         dist -= 0.25;
          if(dist < -10)
              dist = -9.9;
@@ -282,6 +285,10 @@ function handleKeyDown(event) {
         jump = 0;
         fovy = 45;
         yaw = 0;
+    }
+    else if( event.keyCode == 32){
+        //grab dango if press spacebar
+        grab = true;
     }
 }
 
@@ -355,18 +362,22 @@ for(var i = 0; i < 5; i++){
     // CHOPSTICKS
      // set colors 
     ambientProduct  = mult(lightArray[0], colors[3]);
-    diffuseProduct  = mult(lightArray[1], colors[2]);
+    diffuseProduct  = mult(lightArray[1], colors[3]);
     specularProduct = vec4(0, 0, 0, 0);
 
-    squishMatrix = mult(mat4(), scale(.1, .1, 5));
- //   gl.uniformMatrix4fv(squishMatrixLoc,false,flatten(squishMatrix));rotate(30, [0,1,0])
-    modelViewMatrix = mult( translate(-3, 0, 0), mat4() );
-    modelViewMatrix = mult( modelViewMatrix, rotate(-20, [0,1,0]));
-    modelViewMatrix = mult( modelViewMatrix, rotate(40, [0, 0, 1]));
-
+    if(grab == true)
+        grabPosition = Math.pow(Math.sin(4*t/1000), 2);
+    squishMatrix = mult(mat4(), scale(.05, .05, 4));
+    squishMatrix = mult(squishMatrix, translate(-8, 0, 0.1 - grabPosition));
+    if( grabPosition < 0.1)
+        grab = false;
+    squishMatrix = mult(squishMatrix, rotate(-10, [0, 1, 0]));
+    modelViewMatrix = mat4();
+    projectionMatrix = perspective(fovy, aspect, near, far);
+ 
     drawCube.draw(modelViewMatrix);
-    squishMatrix = mult(squishMatrix, translate(0, -3, 0));
-    modelViewMatrix = mult( modelViewMatrix, rotate(2, [1, 0, 0]));
+    squishMatrix = mult(squishMatrix, translate(0, -2, 0));
+    squishMatrix = mult(squishMatrix, rotate(2, [1, 0, 0]));
     drawCube.draw(modelViewMatrix);
     window.requestAnimFrame(render);
 }
