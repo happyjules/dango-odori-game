@@ -3,8 +3,13 @@ function cube()
 {
 	
 
+    this.points = [];
+    this.normals = [];
+    this.indices = [];
+        
+
 // cube vertices
-	this.roomVertices = [
+	var roomVertices = [
     vec4( -0.5, -0.5,  0.5, 1.0 ),
     vec4( -0.5,  0.5,  0.5, 1.0 ),
     vec4(  0.5,  0.5,  0.5, 1.0 ),
@@ -17,47 +22,45 @@ function cube()
 
 // pushes cube vertices and texture coordinates
 	this.quad = function(a, b, c, d) {
-     points.push(self.roomVertices[a]);
-     points.push(self.roomVertices[b]);
-     points.push(self.roomVertices[c]);
+     this.points.push(self.roomVertices[a]);
+     this.points.push(roomVertices[b]);
+     this.points.push(roomVertices[c]);
 
-     points.push(self.roomVertices[a]);
-     points.push(self.roomVertices[c]);
-     points.push(self.roomVertices[d]);
+     this.points.push(roomVertices[a]);
+     this.points.push(roomVertices[c]);
+     this.points.push(roomVertices[d]);
 }
 
-	this.cube = function() {
-    this.quad( 1, 0, 3, 2 );
+
+this.populate_vertices = (function(self) {
+    self.quad( 1, 0, 3, 2 );
     for(var i =0; i <6; i++)    
-        this.normals.push(0,0,-1,0);
-    this.quad( 2, 3, 7, 6 );
+        self.normals.push(0,0,-1,0);
+    self.quad(2, 3, 7, 6 );
 
     for(var i =0; i <6; i++)    
-        this.normals.push(-1,0,0,0);
-    this.quad( 3, 0, 4, 7 );
+        self.normals.push(-1,0,0,0);
+    self.quad( 3, 0, 4, 7 );
 
     for(var i =0; i <6; i++)    
-        this.normals.push(0,1,0,0);
-    this.quad( 6, 5, 1, 2 );
+        self.normals.push(0,1,0,0);
+    self.quad( 6, 5, 1, 2 );
 
     for(var i =0; i <6; i++)    
-        this.normals.push(0,-1,0,0);
+        self.normals.push(0,-1,0,0);
     
-    this.quad( 4, 5, 6, 7 );
+    self.quad( 4, 5, 6, 7 );
     
     for(var i =0; i <6; i++)    
-        this.normals.push(0,0,1,0);
-    this.quad( 5, 4, 0, 1 );
+        self.normals.push(0,0,1,0);
+    self.quad( 5, 4, 0, 1 );
 
     for(var i =0; i <6; i++)    
-       this.normals.push(1,0,0,0);
+       self.normals.push(1,0,0,0);
     
-}
+})(this);
 
-	this.points = [];
-	this.normals = [];
-	this.indices = [];
-		
+	
 
 	this.init_buffers = ( function (self)
 		{
@@ -76,8 +79,8 @@ function cube()
 	{		
 
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(model_transform) );
-    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(mat4()));
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
 
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
