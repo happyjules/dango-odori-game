@@ -234,10 +234,19 @@ window.onload = function init() {
     spLoc = gl.getUniformLocation( program, "specularProduct");
     gl.uniform1f( gl.getUniformLocation( program, "shininess" ), materialShininess );
 
-   
+    
 
     // handle key commands
     document.onkeydown = handleKeyDown;
+
+    //handle clicks
+    document.getElementById("restart").onclick = function(){
+        dist = -5;
+        scoot = 0;
+        jump = 0;
+        fovy = 45;
+        yaw = 0;
+    }
 
     render();
 }
@@ -294,6 +303,8 @@ function handleKeyDown(event) {
         grab = true;
     }
 }
+
+
 
 function render(t) {
     
