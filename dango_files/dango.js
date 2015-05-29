@@ -34,6 +34,9 @@ var ypos = 0;
 //control position of chopstick
 var grab;
 var grabPosition = 0;
+var grabTime;
+var time;
+var firstMoment = true;
 
 // holds vertices and normals and texCoords
 var points  = [];
@@ -299,7 +302,7 @@ function render(t) {
     // build projection matrix
     projectionMatrix = perspective(fovy, aspect, near, far);
     projectionMatrix = mult(projectionMatrix, rotate(yaw, [0,1,0]));
-    projectionMatrix = mult(projectionMatrix, translate(scoot, 0, dist));
+    projectionMatrix = mult(projectionMatrix, translate(scoot, -2, dist));
     projectionMatrix = mult(projectionMatrix, rotate(theta, [1,0,0]));
     // send projection matrix to html file
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
@@ -366,11 +369,27 @@ for(var i = 0; i < 5; i++){
     specularProduct = vec4(0, 0, 0, 0);
 
     if(grab == true)
-        grabPosition = Math.pow(Math.sin(4*t/1000), 2);
+    {
+        if (firstMoment) {
+            grabTime = t;
+            firstMoment = false;
+            time = 0;
+        } else
+            time = t - grabTime;
+
+        if (time < 500)
+            grabPosition += 0.01;
+        else if (time > 500)
+            grabPosition -= 0.01;
+    }
     squishMatrix = mult(mat4(), scale(.05, .05, 4));
     squishMatrix = mult(squishMatrix, translate(-8, 0, 0.1 - grabPosition));
-    if( grabPosition < 0.1)
+    if( time != 0 && grabPosition <= 0)
+    {
         grab = false;
+        firstMoment = true;
+        grabPosition = 0;
+    }
     squishMatrix = mult(squishMatrix, rotate(-10, [0, 1, 0]));
     modelViewMatrix = mat4();
     projectionMatrix = perspective(fovy, aspect, near, far);
