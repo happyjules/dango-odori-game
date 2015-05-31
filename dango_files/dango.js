@@ -16,6 +16,7 @@ var squishFactors = vec2(1,1);
 var miny = 0.5;
 var maxx = 1;
 var maxy = 1;
+var cycle = 0;
 
 // camera parameters
 var aspect;
@@ -47,7 +48,12 @@ var positions = [
     vec3( 4, ypos, -3),
     vec3(-4, ypos, -4),
     vec3( 1, ypos, -4),
-    vec3(-2, ypos, -3)
+    vec3(-2, ypos, -3),
+    vec3( 1, ypos, -5),
+    vec3( 2, ypos, -2),
+    vec3(-3, ypos, -5),
+    vec3( 1, ypos, -4),
+    vec3(-4, ypos, -3)
 ];
 
 // DANGO
@@ -264,22 +270,22 @@ function handleKeyDown(event) {
     } else if (event.keyCode == 40) {
         //Down Arrow Key - position of camera along y-axis
         jump += 0.25;
-    } else if (event.keyCode == 73) {
+    } else if (event.keyCode == 87) {
         // i key - forward
         dist += 0.25;
-        if(dist > 9.9)
-             dist = 9.9;
-    } else if (event.keyCode == 74) {
-        // j key - left
+        if(dist > 8)
+             dist = 8;
+    } else if (event.keyCode == 65) {
+        // A key - left
         scoot += 0.25;
-        if(scoot > 9.9)
-            scoot = 9.9;
-    } else if (event.keyCode == 76) {
+        if(scoot > 9.4)
+            scoot = 9.4;
+    } else if (event.keyCode == 68) {
         // l key - right
         scoot -= 0.25;
         if(scoot < -9.9)
             scoot = -9.9;
-    } else if (event.keyCode == 75) {
+    } else if (event.keyCode == 83) {
         // k key - backward
         dist -= 0.25;
          if(dist < -10)
@@ -326,7 +332,7 @@ function render(t) {
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
 
 //draw the dango bodies
-for(var i = 0; i < 5; i++){
+for(var i = cycle; i < cycle + 5; i++){
     //set the model view matrix
     modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
 
