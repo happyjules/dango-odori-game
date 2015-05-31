@@ -77,8 +77,8 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
 	{		
 
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
-    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(model_transform));
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(model_transform) );
+    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
 
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );

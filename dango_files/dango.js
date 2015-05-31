@@ -18,6 +18,9 @@ var maxx = 1;
 var maxy = 1;
 var cycle = 0;
 
+var cos10 = Math.cos(10);
+var sin10 = Math.sin(10);
+
 // camera parameters
 var aspect;
 var near  = 0.1;
@@ -44,16 +47,16 @@ var points  = [];
 var normals = [];
 
 var positions = [
-    vec3( 0, ypos, -5),
-    vec3( 4, ypos, -3),
-    vec3(-4, ypos, -4),
-    vec3( 1, ypos, -4),
-    vec3(-2, ypos, -3),
-    vec3( 5, ypos, -5),
-    vec3(-2, ypos, -2),
-    vec3(-5, ypos, -5),
-    vec3( 1, ypos, -4),
-    vec3( 0, ypos, -3)
+    vec3( 1, jump, -5),
+    vec3( 4, jump, -3),
+    vec3(-4, jump, -4),
+    vec3( 1, jump, -4),
+    vec3(-2, jump, -3),
+    vec3( 5, jump, -5),
+    vec3(-2, jump, -2),
+    vec3(-5, jump, -5),
+    vec3( 1, jump, -4),
+    vec3( 0, jump, -3)
 ];
 
 // DANGO
@@ -164,18 +167,6 @@ var modelViewMatrixLoc, projectionMatrixLoc, squishMatrixLoc;
 // color product locations
 var apLoc, dpLoc, spLoc, shininessLoc;
 
-
-// computes flat normals
-function computeFlat(a, b, c){
-    var u = subtract(b,a);
-    var v = subtract(c,a);
-
-    var normal = normalize(cross(v,u));
-
-    return normal;
-}
-
-
 // calculates height of dango wrt time
 function bounceHeight(t) {
     h = maxHeight*Math.pow((Math.sin(t/1000)), 2);
@@ -190,6 +181,16 @@ function squish(t) {
     var x = (j*.8 +mx)/mx; 
     var y = (j+my*miny)/my;
     return vec2(x, y);
+}
+
+function detectCollision(a, b, m) {
+    avgRadius = (m[0] + m[1] + 1) / 6;
+    var z = a[2] +b[2];
+    console.log("chopstick y is at ", a[2]);
+    console.log(z);
+    if ( ( Math.pow((a[0]+b[0]),2) + Math.pow((a[1]+b[1]),2) + Math.pow((a[2]+b[2]),2) ) <= 1)//Math.pow(avgRadius,2))
+        return true;
+    else return false;
 }
 
 window.onload = function init() {
@@ -336,55 +337,63 @@ function render(t) {
     jump = bounceHeight(t);
     squishFactors = squish(t);
     squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
-    squishMatrix = mult(squishMatrix, translate(0, jump, 0));
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
+    modelViewMatrix = mult(translate(0,jump,0), mat4());
+
+currentPos = vec3(scoot + grabPosition*cos10, 0, dist + grabPosition*sin10 + 3.9);
+
 
 //draw the dango bodies
-for(var i = cycle; i < cycle + 5; i++){
+for(var i = cycle; i < cycle + 1; i++){
     //set the model view matrix
-    if(dangoToggle[i]){
-        modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
-    }
-    else{
-        modelViewMatrix = mult(translate(positions[i+5]), scale(scaleFactor, scaleFactor, scaleFactor));
+    if (dangoToggle[i]) {
+        //positions[i] = positions[i] + vec3(0, jump, 0);
+       var dangoPos = mult(modelViewMatrix,translate(positions[i]));
+        if (detectCollision(currentPos, positions[i], squishFactors)){
+            dangoToggle[i] = false;
+        }
+    } else {
+        //positions[i+5] = positions[i+5] + vec3(0, jump, 0);
+        var dangoPos = mult(modelViewMatrix,translate(positions[i+5]));
+        if (detectCollision(currentPos, positions[i+5], squishMatrix))
+            dangoToggle[i] = true;
     }
 
-        // set colors
-        ambientProduct  = mult(lightArray[0], dangoColor[i]);
-        diffuseProduct  = mult(lightArray[1], colors[2]);
-        //if (don't want specular product)
-        specularProduct = vec4(0,0,0,0);
-        //else
-        //    specularProduct = mult(lightArray[2], colorArray[3]);
-        dangoSphere.draw(squishMatrix);
+    // set colors
+    ambientProduct  = mult(lightArray[0], dangoColor[i]);
+    diffuseProduct  = mult(lightArray[1], colors[2]);
+    specularProduct = vec4(0,0,0,0);
+
+    dangoSphere.draw(dangoPos);
  
-      }
+    }
 
    // set colors of eyes to black
     ambientProduct  = mult(lightArray[0], colors[3]);
     diffuseProduct  = mult(lightArray[1], colors[3]);
 
        //draw eyes of the dangos
-    for(var k = 0; k < 5; k++){
-    //set the location of the eyes 
-    if(dangoToggle[k]){
-        modelViewMatrix = mult(translate(positions[k]), scale(scaleFactor, scaleFactor, scaleFactor));
-    }
-    else{
-        modelViewMatrix = mult(translate(positions[k+5]), scale(scaleFactor, scaleFactor, scaleFactor));
-    }
+    for(var k = 0; k < 1; k++){
+        //set the location of the eyes 
+        var eyePos;
+        if(dangoToggle[k]) {
+            eyePos = mult(translate(positions[k]), modelViewMatrix);
+        }
+        else {
+            eyePos = mult(translate(positions[k+5]), modelViewMatrix);
+        }
     
     
-    var eye1 = squishMatrix;
-    eye1 = mult(eye1, translate(-.1, 0, .5));
-    eye1 = mult(eye1, scale(0.04, 0.3, .6));
-    dangoSphere.draw(eye1);
+        var eye1 = eyePos;
+        eye1 = mult(eye1, translate(-.1, 0, .5));
+        eye1 = mult(eye1, scale(0.04, 0.3, .6));
+        dangoSphere.draw(eye1);
 
-    var eye2 = squishMatrix;
-    eye2 = mult(eye2, translate(.1, 0, 0.5));
-    eye2 = mult(eye2, scale(0.04, 0.3, .6));
-    dangoSphere.draw(eye2);
-}
+        var eye2 = eyePos;
+        eye2 = mult(eye2, translate(.1, 0, 0.5));
+        eye2 = mult(eye2, scale(0.04, 0.3, .6));
+        dangoSphere.draw(eye2);
+    }
 
   // set colors of room
     ambientProduct  = mult(lightArray[0], colors[0]);
@@ -394,7 +403,7 @@ for(var i = cycle; i < cycle + 5; i++){
     squishMatrix = mat4();
     squishMatrix = mult(squishMatrix, scale(20, 10, 20));
   // build model view matrix
-    modelViewMatrix = mult(translate(0, 4.5,0), scale(1, 1, 1));
+    modelViewMatrix = translate(0, 4.5,0);
     drawCube.draw(modelViewMatrix);
 
 
@@ -414,25 +423,24 @@ for(var i = cycle; i < cycle + 5; i++){
             time = t - grabTime;
 
         if (time < 500)
-            grabPosition += 0.01;
+            grabPosition += 0.05;
         else if (time > 500)
-            grabPosition -= 0.01;
+            grabPosition -= 0.05;
     }
-    squishMatrix = mult(mat4(), scale(.05, .05, 4));
-    squishMatrix = mult(squishMatrix, translate(-8, 0, 0.1 - grabPosition));
+    squishMatrix = scale(0.05, 0.05, 4);
     if( time != 0 && grabPosition <= 0)
     {
         grab = false;
         firstMoment = true;
         grabPosition = 0;
     }
-    squishMatrix = mult(squishMatrix, rotate(-10, [0, 1, 0]));
-    modelViewMatrix = mat4();
     projectionMatrix = perspective(fovy, aspect, near, far);
- 
+
+    modelViewMatrix = mult(rotate(-10, [0, 1, 0]),translate(-0.5, 0, 0.5 - grabPosition));
+    drawCube.draw(modelViewMatrix);  
+
+    modelViewMatrix = mult(translate(0, -0.1, 0), modelViewMatrix);
     drawCube.draw(modelViewMatrix);
-    squishMatrix = mult(squishMatrix, translate(0, -2, 0));
-    squishMatrix = mult(squishMatrix, rotate(2, [1, 0, 0]));
-    drawCube.draw(modelViewMatrix);
+
     window.requestAnimFrame(render);
 }

@@ -79,7 +79,7 @@ this.populate_vertices = (function(self) {
 	{		
 
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(model_transform) );
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
 
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
