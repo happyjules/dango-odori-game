@@ -49,14 +49,22 @@ var positions = [
     vec3(-4, ypos, -4),
     vec3( 1, ypos, -4),
     vec3(-2, ypos, -3),
-    vec3( 1, ypos, -5),
-    vec3( 2, ypos, -2),
-    vec3(-3, ypos, -5),
+    vec3( 5, ypos, -5),
+    vec3(-2, ypos, -2),
+    vec3(-5, ypos, -5),
     vec3( 1, ypos, -4),
-    vec3(-4, ypos, -3)
+    vec3( 0, ypos, -3)
 ];
 
 // DANGO
+
+var dangoToggle = [
+    true,
+    true,
+    true,
+    true,
+    true
+];
 
 //color info for different colored dango
 var dangoColor = [
@@ -271,7 +279,7 @@ function handleKeyDown(event) {
         //Down Arrow Key - position of camera along y-axis
         jump += 0.25;
     } else if (event.keyCode == 87) {
-        // i key - forward
+        // W key - forward
         dist += 0.25;
         if(dist > 8)
              dist = 8;
@@ -281,12 +289,12 @@ function handleKeyDown(event) {
         if(scoot > 9.4)
             scoot = 9.4;
     } else if (event.keyCode == 68) {
-        // l key - right
+        // D key - right
         scoot -= 0.25;
         if(scoot < -9.9)
             scoot = -9.9;
     } else if (event.keyCode == 83) {
-        // k key - backward
+        // S key - backward
         dist -= 0.25;
          if(dist < -10)
              dist = -9.9;
@@ -334,7 +342,12 @@ function render(t) {
 //draw the dango bodies
 for(var i = cycle; i < cycle + 5; i++){
     //set the model view matrix
-    modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
+    if(dangoToggle[i]){
+        modelViewMatrix = mult(translate(positions[i]), scale(scaleFactor, scaleFactor, scaleFactor));
+    }
+    else{
+        modelViewMatrix = mult(translate(positions[i+5]), scale(scaleFactor, scaleFactor, scaleFactor));
+    }
 
         // set colors
         ambientProduct  = mult(lightArray[0], dangoColor[i]);
@@ -354,7 +367,13 @@ for(var i = cycle; i < cycle + 5; i++){
        //draw eyes of the dangos
     for(var k = 0; k < 5; k++){
     //set the location of the eyes 
-    modelViewMatrix = mult(translate(positions[k]), scale(scaleFactor, scaleFactor, scaleFactor));
+    if(dangoToggle[k]){
+        modelViewMatrix = mult(translate(positions[k]), scale(scaleFactor, scaleFactor, scaleFactor));
+    }
+    else{
+        modelViewMatrix = mult(translate(positions[k+5]), scale(scaleFactor, scaleFactor, scaleFactor));
+    }
+    
     
     var eye1 = squishMatrix;
     eye1 = mult(eye1, translate(-.1, 0, .5));
