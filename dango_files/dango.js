@@ -18,8 +18,8 @@ var maxx = 1;
 var maxy = 1;
 var cycle = 0;
 
-var cos10 = Math.cos(10);
-var sin10 = Math.sin(10);
+var cos10 = Math.cos(radians(10));
+var sin10 = Math.sin(radians(10));
 
 // camera parameters
 var aspect;
@@ -185,10 +185,10 @@ function squish(t) {
 
 function detectCollision(a, b, m) {
     avgRadius = (m[0] + m[1] + 1) / 6;
-    var z = a[2] +b[2];
-    console.log("chopstick y is at ", a[2]);
-    console.log(z);
-    if ( ( Math.pow((a[0]+b[0]),2) + Math.pow((a[1]+b[1]),2) + Math.pow((a[2]+b[2]),2) ) <= 1)//Math.pow(avgRadius,2))
+    var z = a[0] +b[0];
+    console.log("chopstick y is at ", b[1]);
+    console.log(Math.pow(z, 2));
+    if ( ( Math.pow((a[0]+b[0]),2) + Math.pow((a[1]+b[1]),2) + Math.pow((a[2]+b[2]),2) ) <= Math.pow(avgRadius,2))
         return true;
     else return false;
 }
@@ -340,7 +340,7 @@ function render(t) {
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
     modelViewMatrix = mult(translate(0,jump,0), mat4());
 
-currentPos = vec3(scoot + grabPosition*cos10, 0, dist + grabPosition*sin10 + 3.9);
+currentPos = vec3(scoot - grabPosition*sin10, 0, dist + grabPosition*cos10 + 3.9);
 
 
 //draw the dango bodies
@@ -350,19 +350,23 @@ for(var i = cycle; i < cycle + 1; i++){
         //positions[i] = positions[i] + vec3(0, jump, 0);
        var dangoPos = mult(modelViewMatrix,translate(positions[i]));
         if (detectCollision(currentPos, positions[i], squishFactors)){
-            dangoToggle[i] = false;
+            dangoColor[i] = vec4(Math.random(), Math.random(), Math.random(), 1);
+            //dangoToggle[i] = false;
+
+
         }
     } else {
         //positions[i+5] = positions[i+5] + vec3(0, jump, 0);
         var dangoPos = mult(modelViewMatrix,translate(positions[i+5]));
         if (detectCollision(currentPos, positions[i+5], squishMatrix))
             dangoToggle[i] = true;
-    }
+}
 
     // set colors
     ambientProduct  = mult(lightArray[0], dangoColor[i]);
     diffuseProduct  = mult(lightArray[1], colors[2]);
     specularProduct = vec4(0,0,0,0);
+
 
     dangoSphere.draw(dangoPos);
  
