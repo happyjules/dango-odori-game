@@ -5,6 +5,8 @@ var gl;
 var dangoSphere;
 var drawCube;
 
+var score = 0;
+
 // various dango parameters
 var index = 0;
 var scaleFactor = 1;
@@ -313,12 +315,14 @@ function handleKeyDown(event) {
     else if( event.keyCode == 32){
         //grab dango if press spacebar
         grab = true;
+        score += 5;
     }
 }
 
 
 
 function render(t) {
+    document.getElementById("score").innerHTML = score;
     
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
