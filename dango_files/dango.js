@@ -183,12 +183,15 @@ function squish(t) {
     return vec2(x, y);
 }
 
-function detectCollision(a, b, m) {
+function detectCollision(a, dango, m) {
     avgRadius = (m[0] + m[1] + 1) / 6;
-    var z = a[0] +b[0];
-    console.log("chopstick y is at ", b[1]);
-    console.log(Math.pow(z, 2));
-    if ( ( Math.pow((a[0]+b[0]),2) + Math.pow((a[1]+b[1]),2) + Math.pow((a[2]+b[2]),2) ) <= Math.pow(avgRadius,2))
+
+    var xchopstick = grabPosition * sin10;
+    var ychopstick = grabPosition * cos10;
+    var z = a[1] - jump;
+   // console.log("chopstick y is at ", a[1]);
+   // console.log(Math.pow(z, 2));
+    if ( ( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump),2) + Math.pow((a[2]+dango[2]),2) ) <= Math.pow(avgRadius,2))
         return true;
     else return false;
 }
@@ -269,34 +272,28 @@ window.onload = function init() {
 function handleKeyDown(event) {
     if (event.keyCode == 37) {
         //Left Arrow Key - heading
-        yaw -= 1;
-    } else if (event.keyCode == 38) {
-        //Up Arrow Key - position of camera along y-axis
-        jump -= 0.25;
+        yaw -= 2;
     } else if (event.keyCode == 39) {
         //Right Arrow Key - heading
-        yaw += 1;
-    } else if (event.keyCode == 40) {
-        //Down Arrow Key - position of camera along y-axis
-        jump += 0.25;
+        yaw += 2;
     } else if (event.keyCode == 87) {
         // W key - forward
-        dist += 0.25;
+        dist += 0.5;
         if(dist > 8)
              dist = 8;
     } else if (event.keyCode == 65) {
         // A key - left
-        scoot += 0.25;
+        scoot += 0.5;
         if(scoot > 9.4)
             scoot = 9.4;
     } else if (event.keyCode == 68) {
         // D key - right
-        scoot -= 0.25;
+        scoot -= 0.5;
         if(scoot < -9.9)
             scoot = -9.9;
     } else if (event.keyCode == 83) {
         // S key - backward
-        dist -= 0.25;
+        dist -= 0.5;
          if(dist < -10)
              dist = -9.9;
     } else if (event.keyCode == 78) {
@@ -327,9 +324,9 @@ function render(t) {
 
     // build projection matrix
     projectionMatrix = perspective(fovy, aspect, near, far);
-    projectionMatrix = mult(projectionMatrix, rotate(yaw, [0,1,0]));
+
     projectionMatrix = mult(projectionMatrix, translate(scoot, -2, dist));
-    projectionMatrix = mult(projectionMatrix, rotate(theta, [1,0,0]));
+    projectionMatrix = mult(projectionMatrix, rotate(yaw, [0,1,0]));
     // send projection matrix to html file
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
 
@@ -340,26 +337,26 @@ function render(t) {
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
     modelViewMatrix = mult(translate(0,jump,0), mat4());
 
-currentPos = vec3(scoot - grabPosition*sin10, 0, dist + grabPosition*cos10 + 3.9);
-
+    currentPos = vec3(scoot - grabPosition*sin10, 2, dist + grabPosition*cos10 + 1.9);
 
 //draw the dango bodies
 for(var i = cycle; i < cycle + 1; i++){
     //set the model view matrix
     if (dangoToggle[i]) {
-        //positions[i] = positions[i] + vec3(0, jump, 0);
        var dangoPos = mult(modelViewMatrix,translate(positions[i]));
         if (detectCollision(currentPos, positions[i], squishFactors)){
-            dangoColor[i] = vec4(Math.random(), Math.random(), Math.random(), 1);
-            //dangoToggle[i] = false;
-
+            dangoColor[i] = vec4(0.45+ Math.random()/3, 0.45+ Math.random()/3, 0.45+ Math.random()/3, 1);
+            dangoToggle[i] = false;
+           
 
         }
     } else {
-        //positions[i+5] = positions[i+5] + vec3(0, jump, 0);
         var dangoPos = mult(modelViewMatrix,translate(positions[i+5]));
-        if (detectCollision(currentPos, positions[i+5], squishMatrix))
+        if (detectCollision(currentPos, positions[i+5], squishFactors))
+        {
+            dangoColor[i] = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
             dangoToggle[i] = true;
+        }
 }
 
     // set colors
