@@ -193,7 +193,7 @@ function detectCollision(a, dango, m) {
     var z = a[1] - jump;
    // console.log("chopstick y is at ", a[1]);
    // console.log(Math.pow(z, 2));
-    if ( ( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump),2) + Math.pow((a[2]+dango[2]),2) ) <= Math.pow(avgRadius,2))
+    if ( ( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump),2) + Math.pow((a[2]+dango[2]),2) ) <= avgRadius)
         return true;
     else return false;
 }
@@ -315,7 +315,6 @@ function handleKeyDown(event) {
     else if( event.keyCode == 32){
         //grab dango if press spacebar
         grab = true;
-        score += 5;
     }
 }
 
@@ -344,14 +343,14 @@ function render(t) {
     currentPos = vec3(scoot - grabPosition*sin10, 2, dist + grabPosition*cos10 + 1.9);
 
 //draw the dango bodies
-for(var i = cycle; i < cycle + 1; i++){
+for(var i = cycle; i < cycle + 5; i++){
     //set the model view matrix
     if (dangoToggle[i]) {
        var dangoPos = mult(modelViewMatrix,translate(positions[i]));
         if (detectCollision(currentPos, positions[i], squishFactors)){
             dangoColor[i] = vec4(0.45+ Math.random()/3, 0.45+ Math.random()/3, 0.45+ Math.random()/3, 1);
             dangoToggle[i] = false;
-           
+            score += 5;
 
         }
     } else {
@@ -360,6 +359,7 @@ for(var i = cycle; i < cycle + 1; i++){
         {
             dangoColor[i] = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
             dangoToggle[i] = true;
+            score += 5; 
         }
 }
 
