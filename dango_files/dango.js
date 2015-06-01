@@ -5,6 +5,8 @@ var gl;
 var dangoSphere;
 var drawCube;
 
+var audio = new Audio("dango_files/gulp.mp3");
+
 var score = 0;
 
 // various dango parameters
@@ -194,7 +196,10 @@ function detectCollision(a, dango, m) {
    // console.log("chopstick y is at ", a[1]);
    // console.log(Math.pow(z, 2));
     if ( ( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump),2) + Math.pow((a[2]+dango[2]),2) ) <= avgRadius)
+    {
+        audio.play();
         return true;
+    }
     else return false;
 }
 
@@ -342,52 +347,46 @@ function render(t) {
 
     currentPos = vec3(scoot - grabPosition*sin10, 2, dist + grabPosition*cos10 + 1.9);
 
-//draw the dango bodies
-for(var i = cycle; i < cycle + 5; i++){
-    //set the model view matrix
-    if (dangoToggle[i]) {
-       var dangoPos = mult(modelViewMatrix,translate(positions[i]));
-        if (detectCollision(currentPos, positions[i], squishFactors)){
-            dangoColor[i] = vec4(0.45+ Math.random()/3, 0.45+ Math.random()/3, 0.45+ Math.random()/3, 1);
-            dangoToggle[i] = false;
-            score += 5;
-
+    // draw dango bodies
+    for(var i = cycle; i < cycle + 5; i++){
+        //set model view matrix
+        if (dangoToggle[i]) {
+           var dangoPos = mult(modelViewMatrix,translate(positions[i]));
+            if (detectCollision(currentPos, positions[i], squishFactors)) {
+                dangoColor[i]  = vec4(0.45+ Math.random()/3, 0.45+ Math.random()/3, 0.45+ Math.random()/3, 1);
+                dangoToggle[i] = false;
+                score += 10;
+            }
+        } else {
+            var dangoPos = mult(modelViewMatrix,translate(positions[i+5]));
+            if (detectCollision(currentPos, positions[i+5], squishFactors)) {
+                dangoColor[i]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
+                dangoToggle[i] = true;
+                score += 10; 
+            }
         }
-    } else {
-        var dangoPos = mult(modelViewMatrix,translate(positions[i+5]));
-        if (detectCollision(currentPos, positions[i+5], squishFactors))
-        {
-            dangoColor[i] = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
-            dangoToggle[i] = true;
-            score += 5; 
-        }
-}
 
-    // set colors
-    ambientProduct  = mult(lightArray[0], dangoColor[i]);
-    diffuseProduct  = mult(lightArray[1], colors[2]);
-    specularProduct = vec4(0,0,0,0);
-
-
-    dangoSphere.draw(dangoPos);
- 
+        // set colors
+        ambientProduct  = mult(lightArray[0], dangoColor[i]);
+        diffuseProduct  = mult(lightArray[1], colors[2]);
+        specularProduct = vec4(0,0,0,0);
+        // draw dango
+        dangoSphere.draw(dangoPos);
     }
 
-   // set colors of eyes to black
+    // set color of eyes to black
     ambientProduct  = mult(lightArray[0], colors[3]);
     diffuseProduct  = mult(lightArray[1], colors[3]);
 
-       //draw eyes of the dangos
-    for(var k = 0; k < 1; k++){
+    //draw eyes of the dangos
+    for(var k = 0; k < 1; k++) {
         //set the location of the eyes 
         var eyePos;
-        if(dangoToggle[k]) {
+        if (dangoToggle[k]) {
             eyePos = mult(translate(positions[k]), modelViewMatrix);
-        }
-        else {
+        } else {
             eyePos = mult(translate(positions[k+5]), modelViewMatrix);
         }
-    
     
         var eye1 = eyePos;
         eye1 = mult(eye1, translate(-.1, 0, .5));
@@ -400,26 +399,23 @@ for(var i = cycle; i < cycle + 5; i++){
         dangoSphere.draw(eye2);
     }
 
-  // set colors of room
+    // set colors of room
     ambientProduct  = mult(lightArray[0], colors[0]);
     diffuseProduct  = mult(lightArray[1], colors[2]);
     specularProduct = vec4(0,0,0,0);
 
-    squishMatrix = mat4();
-    squishMatrix = mult(squishMatrix, scale(20, 10, 20));
-  // build model view matrix
+    squishMatrix = scale(20, 10, 20);
+    // build model view matrix
     modelViewMatrix = translate(0, 4.5,0);
     drawCube.draw(modelViewMatrix);
 
-
     // CHOPSTICKS
-     // set colors 
+    // set colors 
     ambientProduct  = mult(lightArray[0], colors[3]);
     diffuseProduct  = mult(lightArray[1], colors[3]);
     specularProduct = vec4(0, 0, 0, 0);
 
-    if(grab == true)
-    {
+    if(grab == true) {
         if (firstMoment) {
             grabTime = t;
             firstMoment = false;
@@ -428,18 +424,19 @@ for(var i = cycle; i < cycle + 5; i++){
             time = t - grabTime;
 
         if (time < 500)
-            grabPosition += 0.05;
+            grabPosition += 0.1;
         else if (time > 500)
-            grabPosition -= 0.05;
+            grabPosition -= 0.1;
     }
-    squishMatrix = scale(0.05, 0.05, 4);
-    if( time != 0 && grabPosition <= 0)
-    {
+
+    if( time != 0 && grabPosition <= 0) {
         grab = false;
         firstMoment = true;
         grabPosition = 0;
     }
+
     projectionMatrix = perspective(fovy, aspect, near, far);
+    squishMatrix = scale(0.05, 0.05, 4);
 
     modelViewMatrix = mult(rotate(-10, [0, 1, 0]),translate(-0.5, 0, 0.5 - grabPosition));
     drawCube.draw(modelViewMatrix);  
