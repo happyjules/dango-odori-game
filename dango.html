@@ -32,12 +32,16 @@
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
 
+<img id = "texImage" src = "SA2011_black.gif" hidden></img>
 <script id="vertex-shader" type="x-shader/x-vertex">
 
 // assume both position and normal are in homogeneous form
 
 attribute vec4 vPosition;
 attribute vec4 tNormal;
+
+attribute vec2 vTexCoord;
+varying vec2 fTexCoord;
 
 varying vec4 fColor;
 
@@ -55,26 +59,20 @@ main()
 {
     
     // pos is vertex position in eye coordinates
-
     vec3 pos = (modelViewMatrix * vPosition).xyz;
     
     // vector from vertex position to light source
-    
     vec3 L = normalize((lightPosition).xyz-pos);
 
     // Because the eye point the is at the origin
     // the vector from the vertex position to the eye is
-    	
     vec3 E = normalize( -pos );
     
     // halfway vector
-    
     vec3 H = normalize( L + E );
 
     // Transform vertex normal into eye coordinates
-    
     vec3 N = normalize( (modelViewMatrix*tNormal).xyz);
-
 
     // Compute terms in the illumination equation
     vec4 ambient = ambientProduct;
@@ -92,8 +90,10 @@ main()
     gl_Position = projectionMatrix * modelViewMatrix * squishMatrix * vPosition;
     
     fColor = ambient + diffuse + specular;
-
     fColor.a = 1.0;
+
+
+    fTexCoord = vTexCoord;
 }
 </script>
 
@@ -103,11 +103,18 @@ precision mediump float;
 
 varying vec4 fColor;
 
+varying vec2 fTexCoord;
+uniform sampler2D texture;
+uniform int useTexture;
+
 void
 main()
 {
 
     gl_FragColor = fColor;
+
+    if(useTexture == 1)
+        gl_FragColor = fColor + texture2D(texture, fTexCoord);
 
 }
 </script>

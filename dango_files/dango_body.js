@@ -83,7 +83,7 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
     gl.uniform4fv( spLoc, flatten(specularProduct) );
-
+    gl.uniform1i(useTextureLoc, 0);
 	}
 
 

@@ -2,12 +2,11 @@
 function cube()
 {
 	
-
     this.points = [];
     this.normals = [];
-    this.indices = [];
-        
-
+    this.texCoordsArray = [];
+    this.texture;
+    this.image;
 // cube vertices
 	var roomVertices = [
     vec4( -0.5, -0.5,  0.5, 1.0 ),
@@ -20,9 +19,16 @@ function cube()
     vec4(  0.5, -0.5, -0.5, 1.0 )
 ];
 
+
+var texCoord = [
+    vec2(1, 0),
+    vec2(1, 1),
+    vec2(0, 1),
+    vec2(0, 0)
+];
 // pushes cube vertices and texture coordinates
 	this.quad = function(a, b, c, d) {
-     this.points.push(self.roomVertices[a]);
+     this.points.push(roomVertices[a]);
      this.points.push(roomVertices[b]);
      this.points.push(roomVertices[c]);
 
@@ -30,6 +36,14 @@ function cube()
      this.points.push(roomVertices[c]);
      this.points.push(roomVertices[d]);
 }
+    this.setTexture = function(){
+        this.texCoordsArray.push(texCoord[2]);
+        this.texCoordsArray.push(texCoord[3]);
+        this.texCoordsArray.push(texCoord[0]);
+        this.texCoordsArray.push(texCoord[2]);
+        this.texCoordsArray.push(texCoord[0]);
+        this.texCoordsArray.push(texCoord[1]); 
+    }
 
 
 this.populate_vertices = (function(self) {
@@ -58,6 +72,8 @@ this.populate_vertices = (function(self) {
     for(var i =0; i <6; i++)    
        self.normals.push(1,0,0,0);
     
+    for(var i = 0; i <6; i++)
+        self.setTexture();
 })(this);
 
 	
@@ -72,6 +88,27 @@ this.populate_vertices = (function(self) {
 			gl.bindBuffer( gl.ARRAY_BUFFER, self.true_normal_buffer);
 			gl.bufferData( gl.ARRAY_BUFFER, flatten(self.normals), gl.STATIC_DRAW );
 			
+
+          self.tBuffer = gl.createBuffer();
+          gl.bindBuffer( gl.ARRAY_BUFFER, self.tBuffer );
+          gl.bufferData( gl.ARRAY_BUFFER, flatten(self.texCoordsArray), gl.STATIC_DRAW );
+
+
+          self.image = document.getElementById("texImage");
+    //     image.onload = function(){
+            self.texture = gl.createTexture();
+            gl.bindTexture( gl.TEXTURE_2D, self.texture );
+
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, 
+            gl.RGB, gl.UNSIGNED_BYTE, self.image);
+            gl.generateMipmap( gl.TEXTURE_2D );
+    //Set filering to Nearest neighbor
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+            gl.bindTexture(gl.TEXTURE_2D, null);
+        //    }  
+           // self.image.src = "SA2011_black.gif";
 		}
 		)(this);
 	
@@ -99,6 +136,10 @@ this.populate_vertices = (function(self) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.true_normal_buffer );
 		gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
 		
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.tBuffer);
+        gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
+
 		gl.drawArrays( gl.TRIANGLES, 0, this.points.length );
 	}
 }
