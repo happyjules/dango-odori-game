@@ -347,10 +347,10 @@ function render(t) {
   
   
     // draw dango bodies
-    for(var i = cycle; i < cycle + numberOfDango; i++){
+    for(var i = 0; i < numberOfDango; i++){
         //set model view matrix
-        if (dangoToggle[i]) {
          modelViewMatrix = translate(0,jump[i],0);
+        if (dangoToggle[i]) {
            var dangoPos = mult(modelViewMatrix,translate(positions[i]));
             if (detectCollision(i, squishFactors)) {
                 dangoColor[i]  = vec4(0.45+ Math.random()/3, 0.45+ Math.random()/3, 0.45+ Math.random()/3, 1);
