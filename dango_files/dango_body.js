@@ -2,6 +2,15 @@
 //add to render:  	m_sphere.draw(model_transform);	
 
 
+var empty = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
+var texCoord = [
+    vec2(1, 0),
+    vec2(1, 1),
+    vec2(0, 1),
+    vec2(0, 0)
+];
+
 function sphere()
 {
 	
@@ -10,11 +19,21 @@ var b = vec4(0.0, 0.842809, 0.333333, 1);
 var c = vec4(-0.86497, -0.271405, 0.333333, 1);
 var d = vec4(0.86497, -0.271405, 0.333333,1);
 
+this.setTexture = function(){
+        this.texCoordsArray.push(texCoord[3]);
+        this.texCoordsArray.push(texCoord[2]);
+        this.texCoordsArray.push(texCoord[1]);
+        this.texCoordsArray.push(texCoord[3]);
+        this.texCoordsArray.push(texCoord[1]);
+        this.texCoordsArray.push(texCoord[0]); 
+    }
+
 
 	this.numTimesToSubdivide = 5;
 	this.vertices = [];
 	this.true_normals = [];
 	this.indices = [];
+	this.texCoordsArray = [];
 		
 	this.triangle = function(a, b, c) 
 		{
@@ -25,6 +44,8 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
 			 this.true_normals.push(a[0],a[1], a[2], 0.0);
 			 this.true_normals.push(b[0],b[1], b[2], 0.0);
 			 this.true_normals.push(c[0],c[1], c[2], 0.0);
+
+			 this.setTexture();
 
 		}
 
@@ -69,8 +90,24 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
 			self.true_normal_buffer = gl.createBuffer();
 			gl.bindBuffer( gl.ARRAY_BUFFER, self.true_normal_buffer);
 			gl.bufferData( gl.ARRAY_BUFFER, flatten(self.true_normals), gl.STATIC_DRAW );
-			
-			gl.bindTexture( gl.TEXTURE_2D, null);
+
+			 self.tBuffer = gl.createBuffer();
+          	gl.bindBuffer( gl.ARRAY_BUFFER, self.tBuffer );
+          	gl.bufferData( gl.ARRAY_BUFFER, flatten(self.texCoordsArray), gl.STATIC_DRAW );
+
+          	self.image = document.getElementById("white");
+          	self.texture = gl.createTexture();
+          	gl.bindTexture(gl.TEXTURE_2D, self.texture);
+
+          	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, 
+            gl.RGB, gl.UNSIGNED_BYTE, self.image);
+            gl.generateMipmap( gl.TEXTURE_2D );
+
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+            gl.bindTexture(gl.TEXTURE_2D, null);
+
 		}
 		)(this);
 	
@@ -92,12 +129,16 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
 	{		
 		this.update_uniforms(model_transform);
 
+   		gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.tBuffer);
+        gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
+
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.position_buffer);
 		gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.true_normal_buffer );
 		gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
 		
-		gl.drawArrays( gl.TRIANGLES, 0, this.vertices.length );
+		gl.drawArrays( gl.TRIANGLES, 0, this.vertices.length);
 	}
 }

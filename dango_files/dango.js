@@ -379,7 +379,8 @@ function render(t) {
     
 
     gl.uniform1i(useTextureLoc, 0);
-    gl.bindTexture(gl.TEXTURE_2D, null);
+    var empty = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, empty);
 
 
     // build projection matrix
