@@ -379,7 +379,7 @@ function render(t) {
     
 
     gl.uniform1i(useTextureLoc, 0);
-
+    gl.bindTexture(gl.TEXTURE_2D, null);
     // build projection matrix
     projectionMatrix = perspective(fovy, aspect, near, far);
     projectionMatrix = mult(projectionMatrix, translate(scoot, -2, dist));

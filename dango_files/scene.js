@@ -37,12 +37,12 @@ var texCoord = [
      this.points.push(roomVertices[d]);
 }
     this.setTexture = function(){
-        this.texCoordsArray.push(texCoord[2]);
         this.texCoordsArray.push(texCoord[3]);
-        this.texCoordsArray.push(texCoord[0]);
         this.texCoordsArray.push(texCoord[2]);
-        this.texCoordsArray.push(texCoord[0]);
-        this.texCoordsArray.push(texCoord[1]); 
+        this.texCoordsArray.push(texCoord[1]);
+        this.texCoordsArray.push(texCoord[3]);
+        this.texCoordsArray.push(texCoord[1]);
+        this.texCoordsArray.push(texCoord[0]); 
     }
 
 

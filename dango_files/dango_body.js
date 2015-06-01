@@ -70,6 +70,7 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
 			gl.bindBuffer( gl.ARRAY_BUFFER, self.true_normal_buffer);
 			gl.bufferData( gl.ARRAY_BUFFER, flatten(self.true_normals), gl.STATIC_DRAW );
 			
+			gl.bindTexture( gl.TEXTURE_2D, null);
 		}
 		)(this);
 	
@@ -97,6 +98,7 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.true_normal_buffer );
 		gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
 		
+        console.log("dango is drawn"); 
 		gl.drawArrays( gl.TRIANGLES, 0, this.vertices.length );
 	}
 }
