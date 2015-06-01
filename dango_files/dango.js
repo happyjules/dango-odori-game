@@ -154,12 +154,12 @@ var aspect;
 // }
 
 // light information
-var lightPosition = vec4(0.0, 3.0, 0.0, 0.0 );
+var lightPosition = vec4(0.0, 4.5, 0.0, 0.0 );
 // holds information on light in this order: light ambient color, light diffuse color, and specular color
 var lightArray = [
-    vec4( 0.8, 0.8, 0.8, 1.0 ),
-    vec4( 0.8, 0.8, 0.8, 1.0 ),
-    vec4( 0.8, 0.8, 0.8, 1.0 )
+    vec4( 0.5, 0.5, 0.5, 1.0 ),
+    vec4( 0.5, 0.5, 0.5, 1.0 ),
+    vec4( 0.5, 0.5, 0.5, 1.0 )
 ];
 materialShininess = 20;
 
