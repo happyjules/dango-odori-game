@@ -55,11 +55,11 @@ var positions = [
     vec3( 1, 0, -5),
     vec3( 4, 0, -3),
     vec3(-4, 0, -4),
-    vec3( 1, 0, -4),
+    vec3( 3, 0, -2),
     vec3(-2, 0, -3),
     vec3( 5, 0, -5),
     vec3(-2, 0, -2),
-    vec3(-5, 0, -5),
+    vec3(-5, 0, -2),
     vec3( 1, 0, -4),
     vec3( 0, 0, -3)
 ];
@@ -398,7 +398,7 @@ function render(t) {
     }
 
     // set colors of room
-    ambientProduct  = mult(lightArray[0], colors[0]);
+    ambientProduct  = mult(lightArray[0], dangoColor[3]);
     diffuseProduct  = mult(lightArray[1], colors[2]);
     specularProduct = vec4(0,0,0,0);
 
