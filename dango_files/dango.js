@@ -233,17 +233,17 @@ window.onload = function init() {
    //Create sphere to draw dango body and eyes
     dangoSphere = new sphere();
 
-   // nBuffer = gl.createBuffer();
-   // gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
-   // gl.bufferData( gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW );
+   nBuffer = gl.createBuffer();
+   gl.bindBuffer( gl.ARRAY_BUFFER, nBuffer);
+   gl.bufferData( gl.ARRAY_BUFFER, flatten(normals), gl.STATIC_DRAW );
     
     tNormal = gl.getAttribLocation( program, "tNormal" );
     gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray(tNormal);
 
-    // vBuffer = gl.createBuffer();
-    // gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-    // gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
+    vBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
     
     vPosition = gl.getAttribLocation( program, "vPosition");
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
@@ -339,7 +339,7 @@ function render(t) {
     squishMatrix = scale(14, 10, 12);
     // build model view matrix
     modelViewMatrix = translate(0, 4.5,0);
-    drawCube.draw(modelViewMatrix);
+    drawCube.draw(modelViewMatrix, 1);
 
     
     // CHOPSTICKS
@@ -371,15 +371,17 @@ function render(t) {
     squishMatrix = scale(0.05, 0.05, 4);
 
     modelViewMatrix = mult(rotate(-deg, [0, 1, 0]),translate(-0.5, 0, 0.5 - grabPosition));
-    drawCube.draw(modelViewMatrix);  
+    drawCube.draw(modelViewMatrix, 0);  
 
     modelViewMatrix = mult(translate(0, -0.1, 0), modelViewMatrix);
-    drawCube.draw(modelViewMatrix);
+    drawCube.draw(modelViewMatrix, 0);
   //  gl.uniform1i(useTextureLoc, 0);
     
 
     gl.uniform1i(useTextureLoc, 0);
     gl.bindTexture(gl.TEXTURE_2D, null);
+
+
     // build projection matrix
     projectionMatrix = perspective(fovy, aspect, near, far);
     projectionMatrix = mult(projectionMatrix, translate(scoot, -2, dist));

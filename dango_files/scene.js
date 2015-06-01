@@ -6,7 +6,10 @@ function cube()
     this.normals = [];
     this.texCoordsArray = [];
     this.texture;
+    this.textureTwo;
     this.image;
+    this.imageChopStick;
+
 // cube vertices
 	var roomVertices = [
     vec4( -0.5, -0.5,  0.5, 1.0 ),
@@ -107,8 +110,19 @@ this.populate_vertices = (function(self) {
             gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
             gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
             gl.bindTexture(gl.TEXTURE_2D, null);
-        //    }  
-           // self.image.src = "SA2011_black.gif";
+        
+            self.imageChopStick = document.getElementById("texImageTwo");
+            self.textureTwo = gl.createTexture();
+            gl.bindTexture( gl.TEXTURE_2D, self.textureTwo);
+
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, 
+            gl.RGB, gl.UNSIGNED_BYTE, self.imageChopStick);
+            gl.generateMipmap( gl.TEXTURE_2D );
+    //Set filering to Nearest neighbor
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
+            gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
+            gl.bindTexture(gl.TEXTURE_2D, null);
 		}
 		)(this);
 	
@@ -126,7 +140,7 @@ this.populate_vertices = (function(self) {
 	}
 
 
-	this.draw = function(model_transform)
+	this.draw = function(model_transform, tex)
 	{		
 		this.update_uniforms(model_transform);
 
@@ -136,7 +150,10 @@ this.populate_vertices = (function(self) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.true_normal_buffer );
 		gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
 		
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        if(tex ==1)
+        gl.bindTexture(gl.TEXTURE_2D, this.textureTwo);
+        else
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tBuffer);
         gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
 

@@ -76,7 +76,7 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
 	
 	this.update_uniforms = function(model_transform)
 	{		
-
+ 	gl.uniform1i(useTextureLoc, 0);
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(model_transform) );
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
@@ -84,7 +84,7 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
     gl.uniform4fv( apLoc, flatten(ambientProduct) );
     gl.uniform4fv( dpLoc, flatten(diffuseProduct) );
     gl.uniform4fv( spLoc, flatten(specularProduct) );
-    gl.uniform1i(useTextureLoc, 0);
+ 
 	}
 
 
@@ -98,7 +98,6 @@ var d = vec4(0.86497, -0.271405, 0.333333,1);
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.true_normal_buffer );
 		gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
 		
-        console.log("dango is drawn"); 
 		gl.drawArrays( gl.TRIANGLES, 0, this.vertices.length );
 	}
 }

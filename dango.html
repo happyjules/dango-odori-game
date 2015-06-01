@@ -32,6 +32,7 @@
 Oops ... your browser doesn't support the HTML5 canvas element
 </canvas>
 
+<img id = "texImageTwo" src = "wall_texture.png" hidden></img>
 <img id = "texImage" src = "SA2011_black.gif" hidden></img>
 <script id="vertex-shader" type="x-shader/x-vertex">
 
@@ -112,7 +113,6 @@ main()
 {
 
     gl_FragColor = fColor;
-
     if(useTexture == 1)
         gl_FragColor = fColor + texture2D(texture, fTexCoord);
 
