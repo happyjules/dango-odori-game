@@ -4,6 +4,7 @@ var gl;
 
 var dangoSphere;
 var drawCube;
+var numberOfDango = 5;
 
 var audio = new Audio("dango_files/gulp.mp3");
 
@@ -36,7 +37,7 @@ var theta = 0; // pitch
 
 var scoot = 0; // x-position
 var dist  = -5; // z-position
-var jump  = 0; // y-position
+var jump  = []; // y-position
 var ypos = 0;
 
 //control position of chopstick
@@ -51,16 +52,16 @@ var points  = [];
 var normals = [];
 
 var positions = [
-    vec3( 1, jump, -5),
-    vec3( 4, jump, -3),
-    vec3(-4, jump, -4),
-    vec3( 1, jump, -4),
-    vec3(-2, jump, -3),
-    vec3( 5, jump, -5),
-    vec3(-2, jump, -2),
-    vec3(-5, jump, -5),
-    vec3( 1, jump, -4),
-    vec3( 0, jump, -3)
+    vec3( 1, 0, -5),
+    vec3( 4, 0, -3),
+    vec3(-4, 0, -4),
+    vec3( 1, 0, -4),
+    vec3(-2, 0, -3),
+    vec3( 5, 0, -5),
+    vec3(-2, 0, -2),
+    vec3(-5, 0, -5),
+    vec3( 1, 0, -4),
+    vec3( 0, 0, -3)
 ];
 
 // DANGO
@@ -98,7 +99,6 @@ var fovy  = 45.0;
 var yaw   = 0;
 var scoot = 0;
 var dist  = -5;
-var jump  = 0;
 var aspect;
 
 
@@ -172,9 +172,12 @@ var modelViewMatrixLoc, projectionMatrixLoc, squishMatrixLoc;
 var apLoc, dpLoc, spLoc, shininessLoc;
 
 // calculates height of dango wrt time
-function bounceHeight(t) {
-    h = maxHeight*Math.pow((Math.sin(t/1000)), 2);
-    return h;
+function setBounceHeight(t) {
+    for(var x = 0; x < numberOfDango +1; x++){
+        var j = (x+2)/(x+1);
+        jump[x] = maxHeight*Math.pow((Math.sin(j* t/1000)), 2);
+    }
+
 }
 
 // calculates scaling factors of dango wrt height
@@ -187,15 +190,15 @@ function squish(t) {
     return vec2(x, y);
 }
 
-function detectCollision(a, dango, m) {
+function detectCollision(i, m) {
     avgRadius = (m[0] + m[1] + 1) / 6;
-
-    var xchopstick = grabPosition * sin10;
-    var ychopstick = grabPosition * cos10;
-    var z = a[1] - jump;
-   // console.log("chopstick y is at ", a[1]);
-   // console.log(Math.pow(z, 2));
-    if ( ( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump),2) + Math.pow((a[2]+dango[2]),2) ) <= avgRadius)
+    a = vec3(scoot - grabPosition*sin10, 2, dist + grabPosition*cos10 + 1.9);
+    var dango = vec3(positions[i]);
+    if(i > 5)
+        var num = i -5;
+    else
+        var num = i;
+    if ( ( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) <= avgRadius)
     {
         audio.play();
         return true;
@@ -268,7 +271,6 @@ window.onload = function init() {
     document.getElementById("restart").onclick = function(){
         dist = -5;
         scoot = 0;
-        jump = 0;
         fovy = 45;
         yaw = 0;
     }
@@ -313,7 +315,6 @@ function handleKeyDown(event) {
         // r key - reset view settings
         dist = -5;
         scoot = 0;
-        jump = 0;
         fovy = 45;
         yaw = 0;
     }
@@ -339,27 +340,26 @@ function render(t) {
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix) );
 
     //all the dangos will be bouncing at the same time in the same motion.
-    jump = bounceHeight(t);
+    setBounceHeight(t);
     squishFactors = squish(t);
     squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
     gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix));
-    modelViewMatrix = mult(translate(0,jump,0), mat4());
-
-    currentPos = vec3(scoot - grabPosition*sin10, 2, dist + grabPosition*cos10 + 1.9);
-
+  
+  
     // draw dango bodies
-    for(var i = cycle; i < cycle + 5; i++){
+    for(var i = cycle; i < cycle + numberOfDango; i++){
         //set model view matrix
         if (dangoToggle[i]) {
+         modelViewMatrix = translate(0,jump[i],0);
            var dangoPos = mult(modelViewMatrix,translate(positions[i]));
-            if (detectCollision(currentPos, positions[i], squishFactors)) {
+            if (detectCollision(i, squishFactors)) {
                 dangoColor[i]  = vec4(0.45+ Math.random()/3, 0.45+ Math.random()/3, 0.45+ Math.random()/3, 1);
                 dangoToggle[i] = false;
                 score += 10;
             }
         } else {
             var dangoPos = mult(modelViewMatrix,translate(positions[i+5]));
-            if (detectCollision(currentPos, positions[i+5], squishFactors)) {
+            if (detectCollision((i+5), squishFactors)) {
                 dangoColor[i]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
                 dangoToggle[i] = true;
                 score += 10; 
@@ -377,25 +377,23 @@ function render(t) {
     // set color of eyes to black
     ambientProduct  = mult(lightArray[0], colors[3]);
     diffuseProduct  = mult(lightArray[1], colors[3]);
-
+    squishMatrix = scale(0.04, 0.3, 0.6);
     //draw eyes of the dangos
-    for(var k = 0; k < 1; k++) {
+    for(var k = 0; k < numberOfDango; k++) {
         //set the location of the eyes 
-        var eyePos;
+        var eyePos = translate(0, jump[k], 0);
         if (dangoToggle[k]) {
-            eyePos = mult(translate(positions[k]), modelViewMatrix);
+            eyePos = mult(translate(positions[k]), eyePos);
         } else {
-            eyePos = mult(translate(positions[k+5]), modelViewMatrix);
+            eyePos = mult(translate(positions[k+5]), eyePos);
         }
     
         var eye1 = eyePos;
         eye1 = mult(eye1, translate(-.1, 0, .5));
-        eye1 = mult(eye1, scale(0.04, 0.3, .6));
         dangoSphere.draw(eye1);
 
         var eye2 = eyePos;
         eye2 = mult(eye2, translate(.1, 0, 0.5));
-        eye2 = mult(eye2, scale(0.04, 0.3, .6));
         dangoSphere.draw(eye2);
     }
 
@@ -438,7 +436,7 @@ function render(t) {
     projectionMatrix = perspective(fovy, aspect, near, far);
     squishMatrix = scale(0.05, 0.05, 4);
 
-    modelViewMatrix = mult(rotate(-10, [0, 1, 0]),translate(-0.5, 0, 0.5 - grabPosition));
+    modelViewMatrix = mult(rotate(-2, [0, 1, 0]),translate(-0.5, 0, 0.5 - grabPosition));
     drawCube.draw(modelViewMatrix);  
 
     modelViewMatrix = mult(translate(0, -0.1, 0), modelViewMatrix);
