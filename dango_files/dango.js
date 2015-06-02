@@ -8,6 +8,7 @@ var drawSquare;
 var numberOfDango = 5;
 
 var instructionsToggle = true;
+var winToggle = false;
 
 var audio = new Audio("dango_files/gulp.mp3");
 
@@ -304,6 +305,7 @@ window.onload = function init() {
         fovy = 45;
         yaw = 0;
         score = 0;
+        winToggle = false;
     }
 
     render();
@@ -390,7 +392,7 @@ function render(t) {
 
     if(numberOfDango == 0){
         console.log("Winner");
-        instructionsToggle = true;
+        winToggle = true;
     }
     
     // CHOPSTICKS
@@ -511,6 +513,11 @@ function render(t) {
     if (instructionsToggle) {
         gl.uniform1i(useTextureLoc, 1);
         drawSquare.draw(modelViewMatrix, 0);
+    }
+
+    if (winToggle) {
+        gl.uniform1i(useTextureLoc, 1);
+        drawSquare.draw(modelViewMatrix, 1);
     }
 
 

@@ -247,7 +247,7 @@ function square(){
 
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, 
-        gl.RGB, gl.UNSIGNED_BYTE, self.imageChopStick);
+        gl.RGB, gl.UNSIGNED_BYTE, self.image_win);
         gl.generateMipmap( gl.TEXTURE_2D );
     //Set filering to Nearest neighbor
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
