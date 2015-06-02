@@ -24,7 +24,6 @@ var squishFactors = vec2(1,1);
 var miny = 0.5;
 var maxx = 1;
 var maxy = 1;
-var cycle = 0;
 
 var cos10 = Math.cos(radians(2));
 var sin10 = Math.sin(radians(2));
@@ -136,10 +135,11 @@ function setBounceHeight(t) {
 }
 
 // calculates scaling factors of dango wrt height
-function squish(t) {
+function squish(t, i) {
     // if(!dangoToggle[i])
-    //     return vec2(1, 1);
-    var j = maxHeight*Math.pow(Math.sin(2*t/1000), 2);
+    //    return vec2(1, 1);
+    var diff = (i + 2)/(i+1);
+    var j = maxHeight*Math.pow(Math.sin(diff *2*t/1000), 2);
     var my = maxHeight/(maxx - minx); //-4
     var mx = -my; //4
     var x = (j*.8 +mx)/mx; 
@@ -161,7 +161,6 @@ function detectCollisionMove(i, direction) {
     var zDist = a[2] + dango[2];
 
         //if trying to move left and right
-     console.log(xDist);
     if(direction == 1 || direction == 2){
         if(zDist > 2 || zDist < -2)
             return false;
@@ -187,15 +186,15 @@ function detectCollisionMove(i, direction) {
  
 function detectCollision(i) {
     //a is position of the chopsticks
-    a = vec3(scoot + .1 - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
+    a = vec3(scoot + .14 - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
 
     if(dangoToggle[i]){
         var dango = vec3(positions[i]); 
         var num = i;
-        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5)
+        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .6)
        {
             audio.play();
-            dangoColor[i]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
+            dangoColor[i]  = vec4(0.5+ Math.random()/3, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
             dangoToggle[i] = false;
             return true;
         }
@@ -203,9 +202,9 @@ function detectCollision(i) {
     else{
         var num = i;
         var dango = vec3(positions[i+5]);
-        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5){
+        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .6){
             audio.play();
-            dangoColor[i+5]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
+            dangoColor[i+5]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/3, 0.5+ Math.random()/5, 1);
             dangoToggle[i] = true;
             return true;
         }
@@ -458,13 +457,14 @@ function render(t) {
     //all the dangos will be bouncing at the same time in the same motion.
     setBounceHeight(t);
 
-    squishFactors = squish(t);
-    squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
   
     // draw dango bodies
     for(var i = 0; i < numberOfDango; i++){
         //set model view matrix
 
+        squishFactors = squish(t, i);
+        squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
+  
         modelViewMatrix = translate(0,jump[i],0);
 
         // set colors
