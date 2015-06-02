@@ -10,9 +10,9 @@ var numberOfDango = 5;
 var instructionsToggle = true;
 var winToggle = false;
 
-var audio = new Audio("dango_files/gulp.mp3");
+var eatDango = new Audio("dango_files/gulp.mp3");
+var ftw = new Audio("dango_files/fanfare.wav");
 var bgAudio = document.getElementById("bgm");
-//bgAudio.volume = 0.2;
 
 
 var score = 0;
@@ -199,7 +199,7 @@ function detectCollision(i) {
         var num = i;
         if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .7)
        {
-            audio.play();
+            eatDango.play();
             dangoColor[i]  = vec4(0.5+ Math.random()/3, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
             dangoToggle[i] = false;
             return true;
@@ -209,7 +209,7 @@ function detectCollision(i) {
         var num = i;
         var dango = vec3(positions[i+5]);
         if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .7){
-            audio.play();
+            eatDango.play();
             dangoColor[i+5]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/3, 0.5+ Math.random()/5, 1);
             dangoToggle[i] = true;
             return true;
@@ -228,10 +228,12 @@ function detectFinalCollision(i) {
     }
     if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5)
        {
-            audio.play();
+            eatDango.play();
             dangoToggle[i] = dangoToggle[numberOfDango-1];
             positions[i] = positions[numberOfDango-1];
             numberOfDango--;
+            if (numberOfDango == 0)
+                ftw.play();
             return true;
         }
 
@@ -313,7 +315,7 @@ window.onload = function init() {
 
     tunes = document.getElementById("ourBeats");
     tunes.volume = 0.2;
-    audio.volume = 1;
+    eatDango.volume = 1;
     tunes.play();
 
     render();
