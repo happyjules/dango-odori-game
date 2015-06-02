@@ -145,7 +145,7 @@ function cube() {
 		gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
 		
         if(tex ==1)
-        gl.bindTexture(gl.TEXTURE_2D, this.textureTwo);
+            gl.bindTexture(gl.TEXTURE_2D, this.textureTwo);
         else
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.tBuffer);
@@ -279,7 +279,7 @@ function square(){
         gl.vertexAttribPointer( tNormal, 4, gl.FLOAT, false, 0, 0 );
 
         if(tex ==1)
-        gl.bindTexture(gl.TEXTURE_2D, this.textureTwo);
+            gl.bindTexture(gl.TEXTURE_2D, this.textureTwo);
         else
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
 

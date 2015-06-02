@@ -106,6 +106,8 @@ var dist  = -5;
 var aspect;
 
 var stopAnimating = false;
+var tunes;
+var audioOn = true;
 
 // light information
 var lightPosition = vec4(0.0, 4.5, 0.0, 0.0 );
@@ -187,12 +189,12 @@ function detectCollisionMove(i, direction) {
  
 function detectCollision(i) {
     //a is position of the chopsticks
-    a = vec3(scoot + .14 - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
+    a = vec3(scoot + .1 - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
 
     if(dangoToggle[i]){
         var dango = vec3(positions[i]); 
         var num = i;
-        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .6)
+        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .7)
        {
             audio.play();
             dangoColor[i]  = vec4(0.5+ Math.random()/3, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
@@ -203,7 +205,7 @@ function detectCollision(i) {
     else{
         var num = i;
         var dango = vec3(positions[i+5]);
-        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .6){
+        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .7){
             audio.play();
             dangoColor[i+5]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/3, 0.5+ Math.random()/5, 1);
             dangoToggle[i] = true;
@@ -248,9 +250,6 @@ window.onload = function init() {
     gl.enable(gl.DEPTH_TEST);
 
 
-//Still need to implement restart
-    document.getElementById("restart").onclick = function(){;};
- 
 
     //  Load shaders and initialize attribute buffers
     var program = initShaders( gl, "vertex-shader", "fragment-shader" );
@@ -308,6 +307,11 @@ window.onload = function init() {
         numberOfDango = 5;
         instructionsToggle = false;
     }
+
+    tunes = document.getElementById("ourBeats");
+    tunes.volume = 0.3;
+    audio.volume = 1;
+    tunes.play();
 
     render();
 }
@@ -368,6 +372,18 @@ function handleKeyDown(event) {
         //grab dango if press spacebar
         grab = true;
     } 
+    else if(event.keyCode == 77){
+        // m key to control music
+        console.log( audioOn);
+        if(audioOn){
+            tunes.pause();
+            audioOn = false;
+        }
+        else{
+            tunes.play();
+            audioOn = true;
+        }
+    }
     
 }
 
@@ -392,7 +408,6 @@ function render(t) {
     drawCube.draw(modelViewMatrix, 1);
 
     if(numberOfDango == 0){
-        console.log("Winner");
         winToggle = true;
     }
     
