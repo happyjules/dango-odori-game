@@ -63,7 +63,7 @@ var positions = [
     vec3(-2, 0, -3),
     vec3( 5, 0, -5),
     vec3(-2, 0, -2),
-    vec3(-5, 0, -2),
+    vec3(-1, 0, -2),
     vec3( 1, 0, -4),
     vec3( 0, 0, -3)
 ];
@@ -106,55 +106,6 @@ var dist  = -5;
 var aspect;
 
 var stopAnimating = false;
-// ROOM
-// cube vertices
-// var roomVertices = [
-//     vec4( -0.5, -0.5,  0.5, 1.0 ),
-//     vec4( -0.5,  0.5,  0.5, 1.0 ),
-//     vec4(  0.5,  0.5,  0.5, 1.0 ),
-//     vec4(  0.5, -0.5,  0.5, 1.0 ),
-//     vec4( -0.5, -0.5, -0.5, 1.0 ),
-//     vec4( -0.5,  0.5, -0.5, 1.0 ),
-//     vec4(  0.5,  0.5, -0.5, 1.0 ),
-//     vec4(  0.5, -0.5, -0.5, 1.0 )
-// ];
-
-// // pushes cube vertices and texture coordinates
-// function quad(a, b, c, d) {
-//      points.push(roomVertices[a]);
-//      points.push(roomVertices[b]);
-//      points.push(roomVertices[c]);
-
-//      points.push(roomVertices[a]);
-//      points.push(roomVertices[c]);
-//      points.push(roomVertices[d]);
-// }
-
-// function colorCube() {
-//     quad( 1, 0, 3, 2 ); // front
-//     for(var i = 0; i < 6; i++)    
-//         normals.push(0,0,-1,0);
-
-//     quad( 2, 3, 7, 6 );
-//     for(var i = 0; i < 6; i++)    
-//         normals.push(-1,0,0,0);
-
-//     quad( 3, 0, 4, 7 );
-//     for(var i = 0; i < 6; i++)    
-//         normals.push(0,1,0,0);
-
-//     quad( 6, 5, 1, 2 );
-//     for(var i = 0; i < 6; i++)    
-//         normals.push(0,-1,0,0);
-    
-//     quad( 4, 5, 6, 7 );
-//     for(var i = 0; i < 6; i++)    
-//         normals.push(0,0,1,0);
-
-//     quad( 5, 4, 0, 1 );
-//     for(var i = 0; i < 6; i++)    
-//         normals.push(1,0,0,0);
-// }
 
 // light information
 var lightPosition = vec4(0.0, 4.5, 0.0, 0.0 );
@@ -261,6 +212,27 @@ function detectCollision(i) {
     }
     return false;
 }
+
+function detectFinalCollision(i) {
+    //a is position of the chopsticks
+    a = vec3(scoot + .1 - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
+    var dango = vec3(positions[i]); 
+    var num = i;
+    if(!dangoToggle[i]){
+        dango = vec3(positions[i+5]);
+    }
+    if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5)
+       {
+            audio.play();
+            dangoToggle[i] = dangoToggle[numberOfDango-1];
+            positions[i] = positions[numberOfDango-1];
+            numberOfDango--;
+            return true;
+        }
+
+    return false;
+}
+
 
 window.onload = function init() {
 
@@ -388,7 +360,6 @@ function handleKeyDown(event) {
         scoot = 0;
         fovy = 45;
         yaw = 0;
-        score = 0;
     }
     else if( event.keyCode == 32){
         //grab dango if press spacebar
@@ -417,6 +388,10 @@ function render(t) {
     modelViewMatrix = translate(0, 4.5,0);
     drawCube.draw(modelViewMatrix, 1);
 
+    if(numberOfDango == 0){
+        console.log("Winner");
+        instructionsToggle = true;
+    }
     
     // CHOPSTICKS
     // set colors 
@@ -425,11 +400,18 @@ function render(t) {
     specularProduct = vec4(0, 0, 0, 0);
 
     if(grab == true) {
-        for(var i = 0; i < numberOfDango; i++){
-        if (detectCollision(i)){
-                score += 10; 
+            if(score >= 100){
+                for(var i = 0; i < numberOfDango; i++){
+                    if(detectFinalCollision(i))
+                        score +=20;
+                }
+             }
+            else{
+                for(var i = 0; i < numberOfDango; i ++){
+                  if(detectCollision(i))
+                         score += 10; 
+                }
             }   // END if condition
-        }   //END for loop
 
         if (firstMoment) {
             grabTime = t;
