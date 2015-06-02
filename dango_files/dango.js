@@ -294,19 +294,25 @@ function handleKeyDown(event) {
     //     yaw += 2;
      if (event.keyCode == 87) {
         // W key - forward
-        dist += .5;
-        if(dist > 5)
-             dist = 5;
+        if(!instructionsToggle){
+          dist += .5;
+            if(dist > 5)
+                 dist = 5;
+        }
     } else if (event.keyCode == 65) {
         // A key - left
-        scoot += 0.5;
-        if(scoot > 6)
-            scoot = 6;
+        if(!instructionsToggle){
+            scoot += 0.5;
+            if(scoot > 6)
+                scoot = 6;
+        }
     } else if (event.keyCode == 68) {
         // D key - right
-        scoot -= 0.5;
-        if(scoot < -6)
-            scoot = -6;
+        if(!instructionsToggle){
+            scoot -= 0.5;
+            if(scoot < -6)
+                scoot = -6;
+        }
     } else if (event.keyCode == 73) {
         // i key - instructions
         if (instructionsToggle)
@@ -315,9 +321,11 @@ function handleKeyDown(event) {
             instructionsToggle = true;
     } else if (event.keyCode == 83) {
         // S key - backward
-        dist -= 0.5;
-         if(dist < -5)
-             dist = -5;
+        if(!instructionsToggle){
+            dist -= 0.5;
+             if(dist < -5)
+                 dist = -5;
+         }
     } else if (event.keyCode == 82) {
         // r key - reset view settings
         dist = -5;
@@ -327,7 +335,9 @@ function handleKeyDown(event) {
     }
     else if( event.keyCode == 32){
         //grab dango if press spacebar
-        grab = true;
+        if(!instructionsToggle){
+           grab = true;
+        }
     }
 }
 
