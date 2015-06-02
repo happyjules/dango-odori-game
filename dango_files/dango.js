@@ -4,7 +4,10 @@ var gl;
 
 var dangoSphere;
 var drawCube;
+var drawSquare;
 var numberOfDango = 5;
+
+var instructionsToggle = true;
 
 var audio = new Audio("dango_files/gulp.mp3");
 
@@ -230,6 +233,7 @@ window.onload = function init() {
 
     //colorCube();
     drawCube = new cube();
+    drawSquare = new square();
    //Create sphere to draw dango body and eyes
     dangoSphere = new sphere();
 
@@ -303,6 +307,12 @@ function handleKeyDown(event) {
         scoot -= 0.5;
         if(scoot < -6)
             scoot = -6;
+    } else if (event.keyCode == 73) {
+        // i key - instructions
+        if (instructionsToggle)
+            instructionsToggle = false;
+        else
+            instructionsToggle = true;
     } else if (event.keyCode == 83) {
         // S key - backward
         dist -= 0.5;
@@ -447,10 +457,14 @@ function render(t) {
         dangoSphere.draw(eye2);
     }
 
-    // set colors of room
-    ambientProduct  = mult(lightArray[0], dangoColor[3]);
-    diffuseProduct  = mult(lightArray[1], colors[2]);
-    specularProduct = vec4(0,0,0,0);
+    projectionMatrix = mat4();
+    modelViewMatrix = mat4();
+    squishMatrix = mat4();
+
+    if (instructionsToggle) {
+        gl.uniform1i(useTextureLoc, 1);
+        drawSquare.draw(modelViewMatrix);
+    }
 
     // // set colors of room
     // ambientProduct  = mult(lightArray[0], colors[0]);
