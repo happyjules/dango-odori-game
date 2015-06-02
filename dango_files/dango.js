@@ -11,6 +11,9 @@ var instructionsToggle = true;
 var winToggle = false;
 
 var audio = new Audio("dango_files/gulp.mp3");
+var bgAudio = document.getElementById("bgm");
+//bgAudio.volume = 0.2;
+
 
 var score = 0;
 
