@@ -105,7 +105,7 @@ var scoot = 0;
 var dist  = -5;
 var aspect;
 
-
+var stopAnimating = false;
 // ROOM
 // cube vertices
 // var roomVertices = [
@@ -186,6 +186,8 @@ function setBounceHeight(t) {
 
 // calculates scaling factors of dango wrt height
 function squish(t) {
+    // if(!dangoToggle[i])
+    //     return vec2(1, 1);
     var j = maxHeight*Math.pow(Math.sin(2*t/1000), 2);
     var my = maxHeight/(maxx - minx); //-4
     var mx = -my; //4
@@ -193,18 +195,69 @@ function squish(t) {
     var y = (j+my*miny)/my;
     return vec2(x, y);
 }
-
-function detectCollision(i) {
-    a = vec3(scoot -.14 - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
+//code for direction
+//0 forward , 1 left , 2 right , 3 back
+function detectCollisionMove(i, direction) {
+    a = vec3(scoot, 2, dist);
+    //Get dango position 
     var dango = vec3(positions[i]);
-    if(i > 5)
-        var num = i -5;
-    else
+    if(!dangoToggle[i])
+        dango = vec3(positions[i+5]);
+
+    //Check x distance
+    var xDist = a[0] + dango[0];
+     //check in z direction.
+    var zDist = a[2] + dango[2];
+
+        //if trying to move left and right
+     console.log(xDist);
+    if(direction == 1 || direction == 2){
+        if(zDist > 2 || zDist < -2)
+            return false;
+        if(xDist > 1 || xDist < -1.5)
+            return false;
+        if(direction == 1  && xDist < 0)
+            return true;
+        if(direction == 2 && xDist > 0 )
+            return true;
+    }
+    else{
+         if(xDist > 1 || xDist < -1.5)
+            return false;
+        if(zDist > 2.5 || zDist < -2.5)
+            return false;
+        if(direction == 0 && zDist < 0)
+            return true;
+        if(direction == 3 && zDist > 0)
+            return true;
+    }
+    return false;
+}
+ 
+function detectCollision(i) {
+    //a is position of the chopsticks
+    a = vec3(scoot + .1 - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
+
+    if(dangoToggle[i]){
+        var dango = vec3(positions[i]); 
         var num = i;
-    if ( ( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < 1)
-    {
-        audio.play();
-        return true;
+        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5)
+       {
+            audio.play();
+            dangoColor[i]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
+            dangoToggle[i] = false;
+            return true;
+        }
+    }
+    else{
+        var num = i;
+        var dango = vec3(positions[i+5]);
+        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5){
+            audio.play();
+            dangoColor[i+5]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
+            dangoToggle[i] = true;
+            return true;
+        }
     }
     return false;
 }
@@ -285,50 +338,63 @@ window.onload = function init() {
 }
 
 function handleKeyDown(event) {
-    //Left and right keys breaks collision detection
-    // if (event.keyCode == 37) {
-    //     //Left Arrow Key - heading
-    //     yaw -= 2;
-    // } else if (event.keyCode == 39) {
-    //     //Right Arrow Key - heading
-    //     yaw += 2;
-     if (event.keyCode == 87) {
-        // W key - forward
-        dist += .5;
-        if(dist > 5)
-             dist = 5;
-    } else if (event.keyCode == 65) {
-        // A key - left
-        scoot += 0.5;
-        if(scoot > 6)
-            scoot = 6;
-    } else if (event.keyCode == 68) {
-        // D key - right
-        scoot -= 0.5;
-        if(scoot < -6)
-            scoot = -6;
-    } else if (event.keyCode == 73) {
+  
+    if (event.keyCode == 73) {
         // i key - instructions
         if (instructionsToggle)
             instructionsToggle = false;
         else
             instructionsToggle = true;
+    } 
+    if(instructionsToggle && event.keyCode != 73)
+        return;
+     else if (event.keyCode == 87) {
+        // W key - forward
+        if(dist > 5)
+             dist = 5;
+        for(var i = 0; i < numberOfDango; i++){
+            if(detectCollisionMove(i, 0))
+                return;
+        }dist += .5;
+    } else if (event.keyCode == 65) {
+        // A key - left
+        if(scoot > 6)
+            scoot = 6;
+        for(var i = 0; i < numberOfDango; i++){
+            if(detectCollisionMove(i, 1))
+               return;
+        }scoot += 0.5;
+    } else if (event.keyCode == 68) {
+        // D key - right
+        if(scoot < -6)
+            scoot = -6;
+        for(var i = 0; i < numberOfDango; i++){
+            if(detectCollisionMove(i, 2))
+                return;
+        }
+        scoot -= 0.5;
     } else if (event.keyCode == 83) {
         // S key - backward
-        dist -= 0.5;
          if(dist < -5)
              dist = -5;
+        for(var i = 0; i < numberOfDango; i++){
+            if(detectCollisionMove(i, 3))
+                return;
+        }
+         dist -= 0.5;
     } else if (event.keyCode == 82) {
-        // r key - reset view settings
+    // r key - reset view settings
         dist = -5;
         scoot = 0;
         fovy = 45;
         yaw = 0;
+        score = 0;
     }
     else if( event.keyCode == 32){
         //grab dango if press spacebar
         grab = true;
-    }
+    } 
+    
 }
 
 
@@ -359,6 +425,12 @@ function render(t) {
     specularProduct = vec4(0, 0, 0, 0);
 
     if(grab == true) {
+        for(var i = 0; i < numberOfDango; i++){
+        if (detectCollision(i)){
+                score += 10; 
+            }   // END if condition
+        }   //END for loop
+
         if (firstMoment) {
             grabTime = t;
             firstMoment = false;
@@ -370,6 +442,7 @@ function render(t) {
             grabPosition += 0.1;
         else if (time > 500)
             grabPosition -= 0.1;
+
     }
 
     if( time != 0 && grabPosition <= 0) {
@@ -402,34 +475,25 @@ function render(t) {
 
     //all the dangos will be bouncing at the same time in the same motion.
     setBounceHeight(t);
+
     squishFactors = squish(t);
     squishMatrix = scale(squishFactors[0], squishFactors[1], 1);
-    gl.uniformMatrix4fv(squishMatrixLoc, false, flatten(squishMatrix)); 
   
     // draw dango bodies
     for(var i = 0; i < numberOfDango; i++){
         //set model view matrix
-         modelViewMatrix = translate(0,jump[i],0);
-        if (dangoToggle[i]) {
-           var dangoPos = mult(modelViewMatrix,translate(positions[i]));
-            if (detectCollision(i)) {
-                dangoColor[i]  = vec4(0.45+ Math.random()/3, 0.45+ Math.random()/3, 0.45+ Math.random()/3, 1);
-                dangoToggle[i] = false;
-                score += 10;
-            }
-        } else {
-            var dangoPos = mult(modelViewMatrix,translate(positions[i+5]));
-            if (detectCollision(i+5)) {
-                dangoColor[i]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
-                dangoToggle[i] = true;
-                score += 10; 
-            }
-        }
+
+        modelViewMatrix = translate(0,jump[i],0);
 
         // set colors
         ambientProduct  = mult(lightArray[0], dangoColor[i]);
         diffuseProduct  = mult(lightArray[1], colors[2]);
         specularProduct = vec4(0,0,0,0);
+
+        var dangoPos = mult(modelViewMatrix,translate(positions[i]));
+        if (!dangoToggle[i])
+            dangoPos = mult(modelViewMatrix,translate(positions[i+5]));
+           
         // draw dango
         dangoSphere.draw(dangoPos);
     }
@@ -442,6 +506,7 @@ function render(t) {
     for(var k = 0; k < numberOfDango; k++) {
         //set the location of the eyes 
         var eyePos = translate(0, jump[k], 0);
+
         if (dangoToggle[k]) {
             eyePos = mult(translate(positions[k]), eyePos);
         } else {
@@ -466,51 +531,8 @@ function render(t) {
         drawSquare.draw(modelViewMatrix);
     }
 
-    // // set colors of room
-    // ambientProduct  = mult(lightArray[0], colors[0]);
-    // diffuseProduct  = mult(lightArray[1], colors[2]);
-    // specularProduct = vec4(0,0,0,0);
 
-    // squishMatrix = scale(14, 10, 12);
-    // // build model view matrix
-    // modelViewMatrix = translate(0, 4.5,0);
-    // drawCube.draw(modelViewMatrix);
-
-    
-    // // CHOPSTICKS
-    // // set colors 
-    // ambientProduct  = mult(lightArray[0], colors[3]);
-    // diffuseProduct  = mult(lightArray[1], colors[3]);
-    // specularProduct = vec4(0, 0, 0, 0);
-
-    // if(grab == true) {
-    //     if (firstMoment) {
-    //         grabTime = t;
-    //         firstMoment = false;
-    //         time = 0;
-    //     } else
-    //         time = t - grabTime;
-
-    //     if (time < 500)
-    //         grabPosition += 0.1;
-    //     else if (time > 500)
-    //         grabPosition -= 0.1;
-    // }
-
-    // if( time != 0 && grabPosition <= 0) {
-    //     grab = false;
-    //     firstMoment = true;
-    //     grabPosition = 0;
-    // }
-    // projectionMatrix = perspective(fovy, aspect, near, far);
-    // squishMatrix = scale(0.05, 0.05, 4);
-
-    // modelViewMatrix = mult(rotate(-deg, [0, 1, 0]),translate(-0.5, 0, 0.5 - grabPosition));
-    // drawCube.draw(modelViewMatrix);  
-
-    // modelViewMatrix = mult(translate(0, -0.1, 0), modelViewMatrix);
-    // drawCube.draw(modelViewMatrix);
-    // gl.uniform1i(useTextureLoc, 0);
-
+ 
+   // if(collision)
     window.requestAnimFrame(render);
 }
