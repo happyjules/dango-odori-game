@@ -192,12 +192,12 @@ function detectCollisionMove(i, direction) {
  
 function detectCollision(i) {
     //a is position of the chopsticks
-    a = vec3(scoot + .1 - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
+    a = vec3(scoot - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
 
     if(dangoToggle[i]){
         var dango = vec3(positions[i]); 
         var num = i;
-        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .7)
+        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .6)
        {
             eatDango.play();
             dangoColor[i]  = vec4(0.5+ Math.random()/3, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
@@ -208,7 +208,7 @@ function detectCollision(i) {
     else{
         var num = i;
         var dango = vec3(positions[i+5]);
-        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .7){
+        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .6){
             eatDango.play();
             dangoColor[i+5]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/3, 0.5+ Math.random()/5, 1);
             dangoToggle[i] = true;
