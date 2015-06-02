@@ -510,7 +510,7 @@ function render(t) {
 
     if (instructionsToggle) {
         gl.uniform1i(useTextureLoc, 1);
-        drawSquare.draw(modelViewMatrix);
+        drawSquare.draw(modelViewMatrix, 0);
     }
 
 
