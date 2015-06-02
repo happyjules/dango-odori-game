@@ -4,7 +4,10 @@ var gl;
 
 var dangoSphere;
 var drawCube;
+var drawSquare;
 var numberOfDango = 5;
+
+var instructionsToggle = true;
 
 var audio = new Audio("dango_files/gulp.mp3");
 
@@ -233,12 +236,12 @@ function detectCollisionMove(i, direction) {
  
 function detectCollision(i) {
     //a is position of the chopsticks
-    a = vec3(scoot + .14- grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
+    a = vec3(scoot + .1 - grabPosition*sin10, 2, dist + grabPosition*cos10 + 2);
 
     if(dangoToggle[i]){
         var dango = vec3(positions[i]); 
         var num = i;
-        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .8)
+        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5)
        {
             audio.play();
             dangoColor[i]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
@@ -249,7 +252,7 @@ function detectCollision(i) {
     else{
         var num = i;
         var dango = vec3(positions[i+5]);
-        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .8){
+        if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5){
             audio.play();
             dangoColor[i+5]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
             dangoToggle[i] = true;
@@ -283,6 +286,7 @@ window.onload = function init() {
 
     //colorCube();
     drawCube = new cube();
+    drawSquare = new square();
    //Create sphere to draw dango body and eyes
     dangoSphere = new sphere();
 
@@ -334,14 +338,17 @@ window.onload = function init() {
 }
 
 function handleKeyDown(event) {
-    //Left and right keys breaks collision detection
-    // if (event.keyCode == 37) {
-    //     //Left Arrow Key - heading
-    //     yaw -= 2;
-    // } else if (event.keyCode == 39) {
-    //     //Right Arrow Key - heading
-    //     yaw += 2;
-     if (event.keyCode == 87) {
+  
+    if (event.keyCode == 73) {
+        // i key - instructions
+        if (instructionsToggle)
+            instructionsToggle = false;
+        else
+            instructionsToggle = true;
+    } 
+    if(instructionsToggle && event.keyCode != 73)
+        return;
+     else if (event.keyCode == 87) {
         // W key - forward
         if(dist > 5)
              dist = 5;
@@ -374,18 +381,20 @@ function handleKeyDown(event) {
             if(detectCollisionMove(i, 3))
                 return;
         }
-            dist -= 0.5
+         dist -= 0.5;
     } else if (event.keyCode == 82) {
     // r key - reset view settings
         dist = -5;
         scoot = 0;
         fovy = 45;
         yaw = 0;
+        score = 0;
     }
     else if( event.keyCode == 32){
         //grab dango if press spacebar
         grab = true;
     } 
+    
 }
 
 
@@ -513,10 +522,14 @@ function render(t) {
         dangoSphere.draw(eye2);
     }
 
-    // set colors of room
-    ambientProduct  = mult(lightArray[0], dangoColor[3]);
-    diffuseProduct  = mult(lightArray[1], colors[2]);
-    specularProduct = vec4(0,0,0,0);
+    projectionMatrix = mat4();
+    modelViewMatrix = mat4();
+    squishMatrix = mat4();
+
+    if (instructionsToggle) {
+        gl.uniform1i(useTextureLoc, 1);
+        drawSquare.draw(modelViewMatrix);
+    }
 
 
  
