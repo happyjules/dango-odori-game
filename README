@@ -1,0 +1,36 @@
+CS174A Term Project: DANGO ODORI GAME
+
+Group Number 17
+
+Julie Murakami
+UID: 404203662
+
+Christie Vong
+UID: 404121341
+
+Eileen Thé
+UID: 104141878
+
+
+To play the game:
+	Use 'wasd' to move around the room.
+	Use spacebar to pick up a dango.
+	Use 'r' to reset position in room.
+	Use 'i' to toggle viewing the instructions.
+	Use 'm' to toggle playing the music.
+	Press restart to set score back to 0.
+	(If you press restart please click outside the screen so the 
+	spacebar does not get stuck on the restart button.)
+
+Advanced Topic : Collision Detection
+	We implemented collision in our function called detectCollision. We found the 
+	location of the tip of the chopstick by using the position of the camera and the 
+	dimensions of the camera. Since the chopsticks are sticking out of the camera at an 
+	angles of 2 degrees, length of 2, and offcentered by .5, we used trig to find the location.
+	We compared the tip of the chopstick to the center positions of each dango. Since the dangos
+	have a radius of .5 but squish, we checked to see if the distance between the chopsticks and the
+	dango were less than .6 to assume they collided. 
+
+The scene.js generates 3D cube objects which are the room and chopsticks.
+The dango_body.js generates the 3D tetrahedral/sphere objects were are the dango and eyes. 
+
