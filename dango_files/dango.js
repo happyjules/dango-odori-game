@@ -296,9 +296,7 @@ window.onload = function init() {
     gl.uniform1f( gl.getUniformLocation( program, "shininess" ), materialShininess );
 
     useTextureLoc = gl.getUniformLocation( program, "useTexture");
-    // handle key commands
-    document.onkeydown = handleKeyDown;
-
+ 
     //handle clicks
     document.getElementById("restart").onclick = function(){
         dist = -5;
@@ -315,6 +313,10 @@ window.onload = function init() {
     tunes.volume = 0.2;
     audio.volume = 1;
     tunes.play();
+
+       // handle key commands
+    document.onkeydown = handleKeyDown;
+
 
     render();
 }
@@ -394,8 +396,12 @@ function handleKeyDown(event) {
 function render(t) {
     document.getElementById("score").innerHTML = score;
     
+    gl.disable(gl.BLEND);
+    gl.enable(gl.DEPTH_TEST);
+
+
     gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-     projectionMatrix = perspective(fovy, aspect, near, far);
+    projectionMatrix = perspective(fovy, aspect, near, far);
     projectionMatrix = mult(projectionMatrix, translate(scoot, -2, dist));
    
     gl.uniform1i(useTextureLoc, 1);
@@ -530,6 +536,10 @@ function render(t) {
     modelViewMatrix = mat4();
     squishMatrix = mat4();
 
+    gl.enable(gl.BLEND);
+    gl.disable(gl.DEPTH_TEST);
+
+
     if (instructionsToggle) {
         gl.uniform1i(useTextureLoc, 1);
         drawSquare.draw(modelViewMatrix, 0);
@@ -539,6 +549,8 @@ function render(t) {
         gl.uniform1i(useTextureLoc, 1);
         drawSquare.draw(modelViewMatrix, 1);
     }
+    // gl.enable(gl.BLEND);
+    //     gl.disable(gl.DEPTH_TEST);
 
 
  

@@ -169,10 +169,10 @@ function square(){
 
     // square vertices
     var squareVertices = [
-        vec4( -0.5, -0.8, 0.0, 1.0 ),
-        vec4( -0.5,  0.8, 0.0, 1.0 ),
-        vec4(  0.5,  0.8, 0.0, 1.0 ),
-        vec4(  0.5, -0.8, 0.5, 1.0 )
+        vec4( -0.5, -0.8, 0.0, 0.5 ),
+        vec4( -0.5,  0.8, 0.0, 0.5 ),
+        vec4(  0.5,  0.8, 0.0, 0.5 ),
+        vec4(  0.5, -0.8, 0.5, 0.5 )
     ];
 
 
@@ -205,7 +205,7 @@ function square(){
     this.populate_vertices = (function(self) {
         self.quad( 1, 0, 3, 2 );
         for(var i = 0; i < 6; i++)    
-            self.normals.push(0,0,-1,0);
+            self.normals.push(0,0,-1, 0);
         for(var i = 0; i < 6; i++)
             self.setTexture();
     })(this);
@@ -250,6 +250,7 @@ function square(){
         gl.RGB, gl.UNSIGNED_BYTE, self.image_win);
         gl.generateMipmap( gl.TEXTURE_2D );
     //Set filering to Nearest neighbor
+
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST );
         gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
         gl.bindTexture(gl.TEXTURE_2D, null);
