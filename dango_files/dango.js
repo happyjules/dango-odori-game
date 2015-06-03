@@ -197,7 +197,7 @@ function detectCollision(i) {
     if(dangoToggle[i]){
         var dango = vec3(positions[i]); 
         var num = i;
-        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .6)
+        if ((Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5)
        {
             eatDango.play();
             dangoColor[i]  = vec4(0.5+ Math.random()/3, 0.5+ Math.random()/2, 0.5+ Math.random()/2, 1);
@@ -208,7 +208,7 @@ function detectCollision(i) {
     else{
         var num = i;
         var dango = vec3(positions[i+5]);
-     if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .6){
+     if (( Math.pow((a[0]+dango[0]),2) + Math.pow((a[1]- jump[num]),2) + Math.pow((a[2]+dango[2]),2) ) < .5){
           eatDango.play();
             dangoColor[i+5]  = vec4(0.5+ Math.random()/2, 0.5+ Math.random()/3, 0.5+ Math.random()/5, 1);
             dangoToggle[i] = true;
@@ -309,6 +309,8 @@ window.onload = function init() {
         winToggle = false;
         numberOfDango = 5;
         instructionsToggle = false;
+        for(var i = 0; i < numberOfDango; i++)
+            dangoToggle[i] = true;
     }
 
     tunes = document.getElementById("ourBeats");
